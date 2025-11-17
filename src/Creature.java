@@ -8,7 +8,8 @@ public class Creature implements Card{
     private int toughness;
     private String cardText;
     private String cardEdition;
-    private String cardStatus;
+    private String cardStatus; // Game Changer, Banned,
+    private boolean commanderStatus;
 
     public Creature(int cardID, String cardName, String manaCost, String cardType, String cardSubtype, int power, int toughness,
                     String cardText, String cardEdition, String cardStatus) {
@@ -72,5 +73,9 @@ public class Creature implements Card{
     @Override
     public String getCardStatus() {
         return cardStatus;
+    }
+
+    public boolean isCommander() {
+        return commanderStatus;
     }
 }
