@@ -22,27 +22,27 @@ public class Sorcery implements Card{
 
     @Override
     public int getCardId() {
-        return 0;
+        return cardID;
     }
 
     @Override
     public String getCardName() {
-        return "";
+        return cardName;
     }
 
     @Override
     public String getManaCost() {
-        return "";
+        return manaCost;
     }
 
     @Override
     public String getCardType() {
-        return "";
+        return cardType;
     }
 
     @Override
     public String getCardSubtype() {
-        return "";
+        return cardSubtype;
     }
 
     @Override
@@ -57,16 +57,16 @@ public class Sorcery implements Card{
 
     @Override
     public String getCardText() {
-        return "";
+        return cardText;
     }
 
     @Override
     public String getCardEdition() {
-        return "";
+        return cardEdition;
     }
 
     @Override
     public String getCardStatus() {
-        return "";
+        return cardStatus;
     }
 }

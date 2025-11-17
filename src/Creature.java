@@ -36,41 +36,41 @@ public class Creature implements Card{
 
     @Override
     public String getManaCost() {
-        return "";
+        return manaCost;
     }
 
     @Override
     public String getCardType() {
-        return "";
+        return cardType;
     }
 
     @Override
     public String getCardSubtype() {
-        return "";
+        return cardSubtype;
     }
 
     @Override
     public Integer getPower() {
-        return 0;
+        return power;
     }
 
     @Override
     public Integer getToughness() {
-        return 0;
+        return toughness;
     }
 
     @Override
     public String getCardText() {
-        return "";
+        return cardText;
     }
 
     @Override
     public String getCardEdition() {
-        return "";
+        return cardEdition;
     }
 
     @Override
     public String getCardStatus() {
-        return "";
+        return cardStatus;
     }
 }
