@@ -10,20 +10,18 @@ public class Deck {
     private int bracketNum;
     private boolean deckValidity;
     private String manaBase;
-    private int saltScore;
     private String description;
 
     private Connection connection = null;
 
     // Constructor
     public Deck(int deckID, String deckName, int ownerID, int bracketNum,
-                String manaBase, int saltScore, String description) throws SQLException, ClassNotFoundException {
+                String manaBase, String description) throws SQLException, ClassNotFoundException {
         this.deckID = deckID;
         this.deckName = deckName;
         this.ownerID = ownerID;
         this.bracketNum = bracketNum;
         this.manaBase = manaBase;
-        this.saltScore = saltScore;
         this.description = description;
         this.deckCards = new ArrayList<>();
 
@@ -93,10 +91,6 @@ public class Deck {
 
     public String getManaBase() {
         return manaBase;
-    }
-
-    public int getSaltScore() {
-        return saltScore;
     }
 
     public String getDescription() {
@@ -337,8 +331,7 @@ public class Deck {
             stmt.setInt(4, commanderCard != null ? commanderCard.getCardId() : 0);
             stmt.setString(5, "Bracket " + bracketNum);
             stmt.setString(6, manaBase);
-            stmt.setInt(7, saltScore);
-            stmt.setString(8, description);
+            stmt.setString(7, description);
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -354,7 +347,6 @@ public class Deck {
         System.out.println("Commander: " + (commanderCard != null ? commanderCard.getCardName() : "None"));
         System.out.println("Bracket: " + bracketNum);
         System.out.println("Mana Base: " + manaBase);
-        System.out.println("Salt Score: " + saltScore);
         System.out.println("Total Cards: " + getTotalCardCount());
         System.out.println("Validity: " + (deckValidity ? "Valid" : "Invalid"));
 
