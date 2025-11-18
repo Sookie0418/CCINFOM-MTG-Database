@@ -4,7 +4,7 @@ import java.util.List;
 
 public class PlayerTransactions {
 
-    // Make the connection manager available to other classes for checks
+    
     public final DatabaseConnection dbConnection; 
 
     public PlayerTransactions() {
@@ -166,24 +166,5 @@ public class PlayerTransactions {
     // Method to close the database connection when the transactions object is done
     public void close() {
         dbConnection.closeConnection();
-    }
-
-    /**
-     * Main method for testing the PlayerTransactions class.
-     */
-    public static void main(String[] args) {
-        PlayerTransactions transactions = new PlayerTransactions();
-
-        if (transactions.dbConnection.testConnection()) {
-            System.out.println("--- Database Connection Test: SUCCESS ---");
-        } else {
-            System.out.println("--- Database Connection Test: FAILURE. Check DatabaseConnection.java credentials and MySQL server status. ---");
-            transactions.close();
-            return;
-        }
-        
-        // Full test suite here...
-        
-        transactions.close();
     }
 }
