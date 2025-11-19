@@ -2,131 +2,61 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Handles all database transactions (CRUD) for the Card entity using JDBC and MySQL.
- */
 public class CardTransactions {
 
+    private final DatabaseConnection dbConnection;
+
+    public CardTransactions() {
+        this.dbConnection = new DatabaseConnection();
+    }
+
     /**
-     * Retrieves all cards from the database.
+     * Retrieves a card by its specific ID.
+     * Used during Deck Construction to verify card details.
      */
-    public List<Record> getAllCards() throws SQLException {
-        String sql = "SELECT card_id, card_name, card_mana_cost, card_type, card_subtype, " +
-                "card_power, card_toughness, card_text, card_edition, card_status FROM card ORDER BY card_name;";
-        List<Record> cards = new ArrayList<>();
+    public Card getCardById(int cardId) {
+        Connection conn = dbConnection.getConnection();
+        if (!dbConnection.testConnection()) return null;
 
-        Connection conn = DatabaseConnection.getConnection(); // Get the shared connection
-
-        // FIX: Removed conn from try block to prevent premature closing
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
-            if (conn == null) {
-                throw new SQLException("Failed to establish database connection.");
+        String sql = "SELECT * FROM card WHERE card_id = ?";
+        
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, cardId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    // Uses your provided Factory to determine if it's a Creature, Land, etc.
+                    return CardFactory.createCardFromResultSet(rs);
+                }
             }
+        } catch (SQLException e) {
+            System.err.println("Error getting card: " + e.getMessage());
+        }
+        return null;
+    }
 
-            while (rs.next()) {
-                int id = rs.getInt("card_id");
-                String name = rs.getString("card_name");
-                String manaCost = rs.getString("card_mana_cost");
-                String type = rs.getString("card_type");
-                String subtype = rs.getString("card_subtype");
-                String power = rs.getString("card_power");
-                String toughness = rs.getString("card_toughness");
-                String text = rs.getString("card_text");
-                String edition = rs.getString("card_edition");
-                String status = rs.getString("card_status");
+    /**
+     * Searches for cards by name.
+     * Essential for the "Card Record Management" view defined in the PDF.
+     */
+    public List<Card> searchCardsByName(String nameQuery) {
+        List<Card> cards = new ArrayList<>();
+        Connection conn = dbConnection.getConnection();
+        String sql = "SELECT * FROM card WHERE card_name LIKE ?";
 
-                cards.add(new Record(id, name, manaCost, type, subtype, power, toughness, text, edition, status));
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, "%" + nameQuery + "%");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    cards.add(CardFactory.createCardFromResultSet(rs));
+                }
             }
+        } catch (SQLException e) {
+            System.err.println("Error searching cards: " + e.getMessage());
         }
         return cards;
     }
-
-    /**
-     * Adds a new card record to the database.
-     */
-    public void addCard(String name, String manaCost, String type, String subtype,
-                        String power, String toughness, String text, String edition, String status) throws SQLException {
-
-        String sql = "INSERT INTO card (card_name, card_mana_cost, card_type, card_subtype, " +
-                "card_power, card_toughness, card_text, card_edition, card_status) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        Connection conn = DatabaseConnection.getConnection(); // Get the shared connection
-
-        // FIX: Removed conn from try block to prevent premature closing
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            if (conn == null) {
-                throw new SQLException("Failed to establish database connection.");
-            }
-
-            pstmt.setString(1, name);
-            pstmt.setString(2, manaCost);
-            pstmt.setString(3, type);
-            pstmt.setString(4, subtype);
-            pstmt.setString(5, power);
-            pstmt.setString(6, toughness);
-            pstmt.setString(7, text);
-            pstmt.setString(8, edition);
-            pstmt.setString(9, status); // ENUM field
-
-            pstmt.executeUpdate();
-        }
-    }
-
-    /**
-     * Updates an existing card record in the database.
-     */
-    public void updateCard(int id, String name, String manaCost, String type, String subtype,
-                           String power, String toughness, String text, String edition, String status) throws SQLException {
-
-        String sql = "UPDATE card SET card_name = ?, card_mana_cost = ?, card_type = ?, card_subtype = ?, " +
-                "card_power = ?, card_toughness = ?, card_text = ?, card_edition = ?, card_status = ? " +
-                "WHERE card_id = ?";
-
-        Connection conn = DatabaseConnection.getConnection(); // Get the shared connection
-
-        // FIX: Removed conn from try block to prevent premature closing
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            if (conn == null) {
-                throw new SQLException("Failed to establish database connection.");
-            }
-
-            pstmt.setString(1, name);
-            pstmt.setString(2, manaCost);
-            pstmt.setString(3, type);
-            pstmt.setString(4, subtype);
-            pstmt.setString(5, power);
-            pstmt.setString(6, toughness);
-            pstmt.setString(7, text);
-            pstmt.setString(8, edition);
-            pstmt.setString(9, status); // ENUM field
-            pstmt.setInt(10, id);
-
-            pstmt.executeUpdate();
-        }
-    }
-
-    /**
-     * Deletes a card record from the database.
-     */
-    public void deleteCard(int id) throws SQLException {
-        String sql = "DELETE FROM card WHERE card_id = ?";
-
-        Connection conn = DatabaseConnection.getConnection(); // Get the shared connection
-
-        // FIX: Removed conn from try block to prevent premature closing
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            if (conn == null) {
-                throw new SQLException("Failed to establish database connection.");
-            }
-
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
-        }
+    
+    public void close() {
+        dbConnection.closeConnection();
     }
 }
