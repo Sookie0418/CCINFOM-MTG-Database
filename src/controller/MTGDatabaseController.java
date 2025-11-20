@@ -3,6 +3,11 @@ import connection.*;
 import transactions.*;
 import entity.*;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.sql.Statement;
@@ -39,6 +44,7 @@ public class MTGDatabaseController {
      */
     public boolean validateUser(String username, String password) {
         // TODO: Replace with actual database validation using a UserTransactions class.
+        // TODO: Replace registerPlayer with registerUser and use this for validation.
         return "admin".equals(username) && "password".equals(password);
     }
 

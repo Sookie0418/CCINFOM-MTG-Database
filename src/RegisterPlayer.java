@@ -1,3 +1,7 @@
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 /**
@@ -13,64 +17,87 @@ public class RegisterPlayer {
      * @param transactions An initialized PlayerTransactions object.
      * @param scanner The application's main Scanner object for input.
      */
-    public static void promptAndRegister(PlayerTransactions transactions, Scanner scanner) {
-        System.out.println("\n--- New Player Entry ---");
+    public static boolean promptAndRegister(PlayerTransactions transactions, Scanner scanner) {
         
-        // 1. Get First Name
-        System.out.print("Enter First Name: ");
-        String firstName = scanner.nextLine().trim();
-        if (firstName.isEmpty()) {
-            System.out.println("Registration cancelled: First Name cannot be empty.");
-            return;
+        // Get First Name
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        if (username.isEmpty()) {
+            System.out.println("Registration cancelled: Username cannot be empty.");
+            return false;
+        }
+        if (username.contains(" ")) {
+            System.out.println("Registration cancelled: Username cannot contain a space.");
+            return false;
+        }
+        if (isUsernameTaken(username)) {
+            System.out.println("Registration cancelled: Username already taken.");
+            return false;
         }
 
-        // 2. Get Last Name
-        System.out.print("Enter Last Name: ");
-        String lastName = scanner.nextLine().trim();
-        if (lastName.isEmpty()) {
-            System.out.println("Registration cancelled: Last Name cannot be empty.");
-            return;
+
+        System.out.print("Enter password: ");
+        String passwordTemp = scanner.nextLine().trim();
+
+        System.out.print("Confirm password: ");
+        String Password = scanner.nextLine().trim();
+        if (Password.isEmpty()) {
+            System.out.println("Registration cancelled: Password cannot be empty.");
+            return false;
+        }
+        if (Password.contains(" ")) {
+            System.out.println("Registration cancelled: Password cannot contain a space.");
+            return false;
+        }
+        if (Password.length() < 8) {
+            System.out.println("Registration cancelled: Password must be at least 8 characters long");
+            return false;
+        }
+        if (!Password.equals(passwordTemp)) {
+            System.out.println("Passwords do not match.");
+            return false;
         }
 
-        // 3. Get City Address (Optional)
-        System.out.print("Enter City Address (Optional): ");
-        String cityAddress = scanner.nextLine().trim();
-        
-        // 4. Get Age
-        int age = -1;
-        while (age < 0) {
-            System.out.print("Enter Age (must be a positive number): ");
+        File file = new File("LoginInfo.txt");
+        if(file.exists()) {
+            try(FileWriter writer = new FileWriter("LoginInfo.txt", true)) {
+                writer.write(username + " " + Password + "\n");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        else {
             try {
-                // Check if the user wants to exit during input
-                String ageInput = scanner.nextLine().trim();
-                if (ageInput.equalsIgnoreCase("cancel")) {
-                    System.out.println("Registration cancelled.");
-                    return;
+                if (file.createNewFile()) {
+                    try(FileWriter writer = new FileWriter("LoginInfo.txt")) {
+                        writer.write("admin password\n");
+                        writer.write(username + " " + Password + "\n");
+                    }
                 }
-                
-                age = Integer.parseInt(ageInput);
-                if (age <= 0) {
-                    System.out.println("Age must be a positive number.");
-                    age = -1; // Reset to loop again
+                else {
+                    System.out.println("Error creating file");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid number for age.");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
 
-        // Create the Player object (uses the constructor from Player.java)
-        // NOTE: Player.java file is required for this to compile.
-        Player newPlayer = new Player(firstName, lastName, cityAddress, age);
+        return true;
+    }
 
-        // Add player to the database
-        int newId = transactions.addPlayer(newPlayer);
-        
-        if (newId != -1) {
-            System.out.println("\nSUCCESS: Player Registered!");
-            System.out.println("Name: " + newPlayer.getFirstName() + " " + newPlayer.getLastName());
-            System.out.println("Assigned Player ID: " + newId);
-        } else {
-            System.out.println("\nFAILURE: Could not register player. Check console for details (e.g., UNIQUE constraint violation).");
+    private static boolean isUsernameTaken(String username) {
+        Path filePath = Paths.get("LoginInfo.txt");
+        if (!Files.exists(filePath)) {
+            return false;
+        }
+
+        try {
+            return Files.lines(filePath)
+                    .map(line -> line.split(" ")[0])
+                    .anyMatch(existingUsername -> existingUsername.equals(username));
+        } catch (IOException e) {
+            System.out.println("Error checking username: " + e.getMessage());
+            return true;
         }
     }
 }
