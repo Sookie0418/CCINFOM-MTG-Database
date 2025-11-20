@@ -1,40 +1,67 @@
 import java.sql.*;
 
 public class DatabaseConnection {
-    private static final String URL = "jdbc:mysql://127.0.0.1:3306/mtg_commander_db";
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "password";
+    // Database configuration constants
+    // FIX: Added 'serverTimezone=UTC' to the URL to resolve the time zone error.
+    private static final String URL = "jdbc:mysql://127.0.0.1:3306/mtg_commander_db?serverTimezone=UTC&useSSL=false";
+    private static final String USERNAME = "Justin";
+    private static final String PASSWORD = "L1ghtning";
 
-    private Connection connection;
+    // Static connection instance to be shared across the application
+    private static Connection sharedConnection = null;
 
-    public DatabaseConnection() {
+    /**
+     * Initializes the shared database connection upon class loading.
+     */
+    static {
         try {
+            // 1. Load the MySQL JDBC Driver
             Class.forName("com.mysql.cj.jdbc.Driver");
-            this.connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-        } catch (ClassNotFoundException | SQLException e) {
-            System.err.println("Database connection error: " + e.getMessage());
+            System.out.println("JDBC Driver loaded successfully.");
+
+            // 2. Establish the connection
+            // The connection URL now includes the necessary timezone configuration.
+            sharedConnection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            System.out.println("Database connection established successfully.");
+        } catch (ClassNotFoundException e) {
+            System.err.println("FATAL: MySQL JDBC driver not found. Check your classpath (the -cp argument).");
+        } catch (SQLException e) {
+            System.err.println("FATAL: Database connection failed. Check your MySQL server status, username, and password.");
+            System.err.println("SQL Error: " + e.getMessage());
         }
     }
 
-    public Connection getConnection() {
-        return connection;
+    /**
+     * Provides the single shared connection instance.
+     * @return The active Connection object, or null if connection failed at startup.
+     */
+    public static Connection getConnection() {
+        return sharedConnection;
     }
 
-    public void closeConnection() {
+    /**
+     * Tests if the shared connection is currently valid.
+     */
+    public static boolean testConnection() {
         try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
+            // Check if the connection object exists and is open
+            return sharedConnection != null && !sharedConnection.isClosed();
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Closes the shared database connection (call this before exiting the application).
+     */
+    public static void closeConnection() {
+        try {
+            if (sharedConnection != null && !sharedConnection.isClosed()) {
+                sharedConnection.close();
+                System.out.println("Database connection closed.");
             }
         } catch (SQLException e) {
             System.err.println("Error closing connection: " + e.getMessage());
-        }
-    }
-
-    public boolean testConnection() {
-        try {
-            return connection != null && !connection.isClosed();
-        } catch (SQLException e) {
-            return false;
         }
     }
 }
