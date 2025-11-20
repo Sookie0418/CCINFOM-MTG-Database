@@ -4,6 +4,7 @@ import javax.swing.table.JTableHeader; // Needed for table header styling
 import javax.swing.border.TitledBorder; // Needed for form border styling
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class PlayerGUI extends JFrame {
     private static final Font BOLD_FONT = new Font("Arial", Font.BOLD, 12);
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 18);
     private static final Color BUTTON_BLUE = new Color(50, 150, 255); // Update Button Color
-
+    private static final String TASKBAR_ICON_FILE = "taskbar_icon.png";
 
     // Reference to the controller
     private MTGDatabaseController controller;
@@ -66,6 +67,16 @@ public class PlayerGUI extends JFrame {
         statusLabel.setBackground(ACCENT_RED);
         statusLabel.setForeground(Color.BLACK);
         statusLabel.setOpaque(true);
+
+        try {
+            File iconFile = new File(TASKBAR_ICON_FILE);
+            if (iconFile.exists()) {
+                Image iconImage = new ImageIcon(iconFile.getAbsolutePath()).getImage();
+                this.setIconImage(iconImage); // Set the taskbar and window icon
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load application icon: " + e.getMessage());
+        }
 
         // 4. Layout Assembly
         JPanel contentPanel = new JPanel(new BorderLayout(10, 10));

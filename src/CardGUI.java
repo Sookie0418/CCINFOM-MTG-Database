@@ -4,6 +4,7 @@ import javax.swing.table.JTableHeader; // FIX 1: Import JTableHeader
 import javax.swing.border.TitledBorder; // FIX 2: Import TitledBorder
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class CardGUI extends JFrame {
     private static final Color INPUT_BG = new Color(45, 45, 45);
     private static final Font BOLD_FONT = new Font("Arial", Font.BOLD, 12);
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 18);
-
+    private static final String TASKBAR_ICON_FILE = "taskbar_icon.png";
 
     // --- UI Components ---
     private JTable dataTable;
@@ -79,6 +80,17 @@ public class CardGUI extends JFrame {
         JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
         contentPanel.setBackground(BG_DARK);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
+
+        try {
+            File iconFile = new File(TASKBAR_ICON_FILE);
+            if (iconFile.exists()) {
+                Image iconImage = new ImageIcon(iconFile.getAbsolutePath()).getImage();
+                this.setIconImage(iconImage); // Set the taskbar and window icon
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load application icon: " + e.getMessage());
+        }
+
 
         // Add Title
         JLabel mainTitle = new JLabel("CARD INVENTORY MANAGER", SwingConstants.CENTER);
