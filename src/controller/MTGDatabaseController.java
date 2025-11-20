@@ -172,4 +172,21 @@ public class MTGDatabaseController {
         // FIX: Method signature added
         return playerTransactions.deletePlayer(playerId);
     }
+
+    // --- Public Card methods calling BorrowTransactions ---
+    public List<BorrowRequest> getAllBorrowRequests() throws SQLException {
+        return borrowTransactions.getAllBorrowRequests();
+    }
+
+    public boolean isDeckAvailable(int deckId) throws SQLException {
+        return borrowTransactions.isDeckAvailable(deckId);
+    }
+    
+    public boolean requestBorrow(int playerId, int deckId) throws SQLException {
+        return borrowTransactions.requestBorrow(playerId, deckId);
+    }
+
+    public boolean returnDeck(int borrowCode) throws SQLException {
+        return borrowTransactions.returnDeck(borrowCode);
+    }
 }

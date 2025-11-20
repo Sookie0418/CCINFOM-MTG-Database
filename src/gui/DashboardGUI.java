@@ -65,9 +65,7 @@ public class DashboardGUI extends JFrame {
         navPanel.add(createNavButton("Deck Management", e -> {
             JOptionPane.showMessageDialog(this, "Deck Management coming soon!", "Placeholder", JOptionPane.INFORMATION_MESSAGE);
         }));
-        navPanel.add(createNavButton("Borrow Requests", e -> {
-            JOptionPane.showMessageDialog(this, "Borrow Requests coming soon!", "Placeholder", JOptionPane.INFORMATION_MESSAGE);
-        }));
+        navPanel.add(createNavButton("Borrow Requests", e -> launchGUI(new BorrowReqGUI(controller))));
 
         add(navPanel, BorderLayout.CENTER);
 
