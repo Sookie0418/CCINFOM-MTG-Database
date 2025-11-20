@@ -6,37 +6,37 @@ import java.util.Scanner;
  * MTGDatabaseDriver.
  * NOTE: Does not contain a main method.
  */
-public class RegisterPlayer {
+public class RegisterUser {
 
     /**
      * Guides the user through the input process to register a new player.
      * @param transactions An initialized PlayerTransactions object.
      * @param scanner The application's main Scanner object for input.
      */
-    public static void promptAndRegister(PlayerTransactions transactions, Scanner scanner) {
+    public static boolean promptAndRegister(PlayerTransactions transactions, Scanner scanner) {
         System.out.println("\n--- New Player Entry ---");
         
-        // 1. Get First Name
+        // Get First Name
         System.out.print("Enter First Name: ");
         String firstName = scanner.nextLine().trim();
         if (firstName.isEmpty()) {
             System.out.println("Registration cancelled: First Name cannot be empty.");
-            return;
+            return false;
         }
 
-        // 2. Get Last Name
+        // Get Last Name
         System.out.print("Enter Last Name: ");
         String lastName = scanner.nextLine().trim();
         if (lastName.isEmpty()) {
             System.out.println("Registration cancelled: Last Name cannot be empty.");
-            return;
+            return false;
         }
 
-        // 3. Get City Address (Optional)
+        // Get City Address (Optional)
         System.out.print("Enter City Address (Optional): ");
         String cityAddress = scanner.nextLine().trim();
         
-        // 4. Get Age
+        // Get Age
         int age = -1;
         while (age < 0) {
             System.out.print("Enter Age (must be a positive number): ");
@@ -45,7 +45,7 @@ public class RegisterPlayer {
                 String ageInput = scanner.nextLine().trim();
                 if (ageInput.equalsIgnoreCase("cancel")) {
                     System.out.println("Registration cancelled.");
-                    return;
+                    return false;
                 }
                 
                 age = Integer.parseInt(ageInput);
@@ -58,11 +58,8 @@ public class RegisterPlayer {
             }
         }
 
-        // Create the Player object (uses the constructor from Player.java)
-        // NOTE: Player.java file is required for this to compile.
         Player newPlayer = new Player(firstName, lastName, cityAddress, age);
 
-        // Add player to the database
         int newId = transactions.addPlayer(newPlayer);
         
         if (newId != -1) {
@@ -72,5 +69,6 @@ public class RegisterPlayer {
         } else {
             System.out.println("\nFAILURE: Could not register player. Check console for details (e.g., UNIQUE constraint violation).");
         }
+        return true;
     }
 }

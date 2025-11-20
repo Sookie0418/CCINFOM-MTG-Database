@@ -22,14 +22,13 @@ public class BorrowTransactions {
             pstmt.setInt(1, deckId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    // If count is 0, it's available. If > 0, someone has it.
                     return rs.getInt(1) == 0;
                 }
             }
         } catch (SQLException e) {
             System.err.println("Availability check failed: " + e.getMessage());
         }
-        return false; // Default to unavailable on error for safety
+        return false;
     }
 
     /**
@@ -49,7 +48,7 @@ public class BorrowTransactions {
             pstmt.setInt(1, playerId);
             pstmt.setInt(2, deckId);
             pstmt.setString(3, borrowType);
-            pstmt.setDate(4, Date.valueOf(LocalDate.now())); // Current date
+            pstmt.setDate(4, Date.valueOf(LocalDate.now()));
 
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;

@@ -4,15 +4,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-/**
- * The central navigation hub (Dashboard) displayed after a successful login.
- * Allows the user to select which management system (Cards, Players, etc.) to access.
- */
 public class DashboardGUI extends JFrame {
 
     private final MTGDatabaseController controller;
 
-    // --- Colors & Fonts ---
     private static final Color BG_DARK = new Color(30, 30, 30);
     private static final Color ACCENT_RED = new Color(255, 60, 0);
     private static final Color FG_LIGHT = new Color(240, 240, 240);
@@ -25,7 +20,6 @@ public class DashboardGUI extends JFrame {
     public DashboardGUI(MTGDatabaseController controller) {
         this.controller = controller;
 
-        // --- Frame Setup ---
         setTitle("MTG Commander DB - Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(800, 600);
@@ -33,14 +27,12 @@ public class DashboardGUI extends JFrame {
         getContentPane().setBackground(BG_DARK);
         setLayout(new BorderLayout(20, 20));
 
-        // 1. Header
         JLabel header = new JLabel("MTG DATABASE MANAGEMENT HUB", SwingConstants.CENTER);
         header.setFont(HEADER_FONT);
         header.setForeground(ACCENT_RED);
         header.setBorder(BorderFactory.createEmptyBorder(20, 20, 0, 20));
         add(header, BorderLayout.NORTH);
 
-        // 2. Navigation Panel (Grid of buttons)
         JPanel navPanel = new JPanel(new GridLayout(2, 2, 30, 30)); // 2x2 grid with spacing
         navPanel.setBackground(BG_DARK);
         navPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 50, 50));
@@ -55,7 +47,6 @@ public class DashboardGUI extends JFrame {
             System.err.println("Failed to load application icon: " + e.getMessage());
         }
 
-        // Create and add buttons
         navPanel.add(createNavButton("Card Inventory", e -> launchGUI(new CardGUI(controller))));
         navPanel.add(createNavButton("Player Records", e -> launchGUI(new PlayerGUI(controller))));
         navPanel.add(createNavButton("Deck Management", e -> {
@@ -67,7 +58,6 @@ public class DashboardGUI extends JFrame {
 
         add(navPanel, BorderLayout.CENTER);
 
-        // 3. Footer (Logout)
         JButton logoutButton = createStyledButton("Logout", new Color(150, 0, 0));
         logoutButton.addActionListener(e -> handleLogout());
 
@@ -94,7 +84,6 @@ public class DashboardGUI extends JFrame {
 
         button.addActionListener(listener);
 
-        // Add a simple hover effect for flair
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(BUTTON_COLOR.brighter());
@@ -124,8 +113,6 @@ public class DashboardGUI extends JFrame {
      * Launches a specific GUI frame and keeps the dashboard open.
      */
     private void launchGUI(JFrame guiFrame) {
-        // The individual GUI handles its own visibility
-        // This method ensures the new window appears centered and on top
         guiFrame.setVisible(true);
     }
 
@@ -139,9 +126,8 @@ public class DashboardGUI extends JFrame {
                 JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
-            // Close the shared database connection
+
             DatabaseConnection.closeConnection();
-            // Exit the application
             System.exit(0);
         }
     }
