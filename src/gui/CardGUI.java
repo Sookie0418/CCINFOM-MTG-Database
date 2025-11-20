@@ -3,8 +3,8 @@ import controller.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.border.TitledBorder;
+import javax.swing.table.JTableHeader; // FIX 1: Import JTableHeader
+import javax.swing.border.TitledBorder; // FIX 2: Import TitledBorder
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -51,6 +51,8 @@ public class CardGUI extends JFrame {
     private MTGDatabaseController controller;
     private static final String[] CARD_STATUSES = {"Legal", "Banned", "Game Changer"};
 
+
+    // NOTE: Class name changed to CardGUI
     public CardGUI(MTGDatabaseController controller) {
         this.controller = controller;
 
@@ -139,25 +141,13 @@ public class CardGUI extends JFrame {
         playerItem.setBackground(INPUT_BG);
         playerItem.setForeground(FG_LIGHT);
 
-        JMenuItem deckItem = new JMenuItem("Deck Management");
-        deckItem.addActionListener(e -> launchGUI(new DeckGUI(controller)));
-        deckItem.setBackground(INPUT_BG);
-        deckItem.setForeground(FG_LIGHT);
-
-        JMenuItem borrowItem = new JMenuItem("Borrow Management");
-        borrowItem.addActionListener(e -> launchGUI(new BorrowReqGUI(controller)));
-        borrowItem.setBackground(INPUT_BG);
-        borrowItem.setForeground(FG_LIGHT);
-
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(e -> System.exit(0));
         exitItem.setBackground(INPUT_BG);
-        exitItem.setForeground(ACCENT_RED);
+        exitItem.setForeground(ACCENT_RED); // Highlight exit
 
         navMenu.add(dashboardItem);
         navMenu.add(playerItem);
-        navMenu.add(deckItem);
-        navMenu.add(borrowItem);
         appMenu.add(exitItem);
 
         menuBar.add(appMenu);

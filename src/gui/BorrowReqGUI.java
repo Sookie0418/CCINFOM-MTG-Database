@@ -138,11 +138,6 @@ public class BorrowReqGUI extends JFrame {
         playerItem.setBackground(INPUT_BG);
         playerItem.setForeground(FG_LIGHT);
 
-        JMenuItem deckItem = new JMenuItem("Deck Management");
-        deckItem.addActionListener(e -> launchGUI(new DeckGUI(controller)));
-        deckItem.setBackground(INPUT_BG);
-        deckItem.setForeground(FG_LIGHT);
-
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(e -> System.exit(0));
         exitItem.setBackground(INPUT_BG);
@@ -151,7 +146,6 @@ public class BorrowReqGUI extends JFrame {
         navMenu.add(dashboardItem);
         navMenu.add(cardItem);
         navMenu.add(playerItem);
-        navMenu.add(deckItem);
         appMenu.add(exitItem);
 
         menuBar.add(appMenu);

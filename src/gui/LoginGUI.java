@@ -23,9 +23,9 @@ public class LoginGUI extends JFrame {
     private final JPasswordField passwordField;
 
     // Image files
-    private static final String BACKGROUND_FILE = "bg.png";
-    private static final String TASKBAR_ICON_FILE = "taskbar_icon.png";
-    private static final String LOGO_FILE = "logo.png";
+    private static final String BACKGROUND_FILE = "/src/gui/images/bg.png";
+    private static final String TASKBAR_ICON_FILE = "/src/gui/images/taskbar_icon.png";
+    private static final String LOGO_FILE = "/src/gui/images/logo.png";
 
     // Colors
     private static final Color BG_DARK = new Color(10, 10, 15);

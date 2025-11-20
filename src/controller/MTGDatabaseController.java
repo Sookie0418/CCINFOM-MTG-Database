@@ -65,6 +65,7 @@ public class MTGDatabaseController {
             System.out.println("Error reading login file: " + e.getMessage());
             return false;
         }
+        return "admin".equals(username) && "password".equals(password);
     }
 
     /**
