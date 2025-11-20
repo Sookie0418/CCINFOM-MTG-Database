@@ -3,6 +3,11 @@ import connection.*;
 import transactions.*;
 import entity.*;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.sql.Statement;
@@ -10,10 +15,8 @@ import java.util.List;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-// The transaction classes are assumed to be in their own files.
 
 public class MTGDatabaseController {
-    // Transaction handlers
     private PlayerTransactions playerTransactions;
     private DeckTransactions deckTransactions;
     private CardTransactions cardTransactions;
@@ -24,29 +27,43 @@ public class MTGDatabaseController {
      * and initializes the transaction handlers.
      */
     public MTGDatabaseController() {
-        // 1. Ensure the necessary table structure exists in MySQL
         initializeDatabaseSchema();
 
-        // 2. Initialize transaction handlers
         this.cardTransactions = new CardTransactions();
         this.playerTransactions = new PlayerTransactions();
         this.deckTransactions = new DeckTransactions();
         this.borrowTransactions = new BorrowTransactions();
     }
 
-    /**
-     * Validates the provided username and password (Hardcoded for now).
-     */
     public boolean validateUser(String username, String password) {
         // TODO: Replace with actual database validation using a UserTransactions class.
-        return "admin".equals(username) && "password".equals(password);
+        // TODO: Replace registerPlayer with registerUser and use this for validation.
+        Path filePath = Paths.get("LoginInfo.txt");
+        if (!Files.exists(filePath)) {
+            System.out.println("Login file not found.");
+            return false;
+        }
+        try {
+            boolean isValid = Files.lines(filePath)
+                    .map(line -> line.split(" "))
+                    .filter(parts -> parts.length >= 2)
+                    .anyMatch(parts -> parts[0].equals(username) && parts[1].equals(password));
+
+            if (!isValid) {
+                System.out.println("Invalid username or password.");
+            }
+            return isValid;
+
+        } catch (IOException e) {
+            System.out.println("Error reading login file: " + e.getMessage());
+            return false;
+        }
     }
 
     /**
      * Creates all tables from the MTG Database.sql file if they do not already exist.
      */
     private void initializeDatabaseSchema() {
-        // SQL statements for creating all tables (from MTG Database.sql)
         String createTablesSQL =
                 "CREATE TABLE IF NOT EXISTS player (" +
                         "    player_id INT AUTO_INCREMENT PRIMARY KEY," +
@@ -102,7 +119,7 @@ public class MTGDatabaseController {
                         "        ON UPDATE CASCADE" +
                         ");";
 
-        Connection conn = DatabaseConnection.getConnection(); // Get the shared connection
+        Connection conn = DatabaseConnection.getConnection();
 
         try (Statement stmt = conn.createStatement()) {
 
@@ -122,7 +139,7 @@ public class MTGDatabaseController {
     }
 
     // --- Public Card methods calling CardTransactions ---
-    public List<entity.Record> getAllCards() throws SQLException {
+    public List<Record> getAllCards() throws SQLException {
         return cardTransactions.getAllCards();
     }
 
@@ -140,7 +157,6 @@ public class MTGDatabaseController {
         cardTransactions.deleteCard(id);
     }
 
-    // --- Public Player methods calling PlayerTransactions (FIXED SIGNATURES) ---
     /**
      * Retrieves all player records from the database via the transaction layer.
      */

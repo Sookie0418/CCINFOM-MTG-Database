@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class CardGUI extends JFrame {
 
-    // --- Colors & Fonts ---
+    // Color and fonts
     private static final Color BG_DARK = new Color(30, 30, 30);
     private static final Color FG_LIGHT = new Color(240, 240, 240);
     private static final Color ACCENT_RED = new Color(255, 60, 0);
@@ -27,11 +27,11 @@ public class CardGUI extends JFrame {
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 18);
     private static final String TASKBAR_ICON_FILE = "taskbar_icon.png";
 
-    // --- UI Components ---
+    // UI
     private JTable dataTable;
     private DefaultTableModel tableModel;
 
-    // Input Fields
+    // Input
     private JTextField nameField;
     private JTextField manaCostField;
     private JTextField typeField;
@@ -51,35 +51,27 @@ public class CardGUI extends JFrame {
     private MTGDatabaseController controller;
     private static final String[] CARD_STATUSES = {"Legal", "Banned", "Game Changer"};
 
-
-    // NOTE: Class name changed to CardGUI
     public CardGUI(MTGDatabaseController controller) {
         this.controller = controller;
 
-        // 1. Frame Setup
         setTitle("MTG Commander Database System (Card Management)");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Close this window, not the whole application
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(1200, 750);
         setLayout(new BorderLayout(15, 15));
 
-        // Set entire frame background color
         getContentPane().setBackground(BG_DARK);
 
-        // 1.5 Add Menu Bar for Navigation
         setJMenuBar(createMenuBar());
 
-        // 2. Initialize Components
         initializeForm();
         initializeTable();
 
-        // 3. Status Bar (Themed)
         statusLabel = new JLabel("Application Ready.");
         statusLabel.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         statusLabel.setBackground(ACCENT_RED);
-        statusLabel.setForeground(Color.BLACK); // Black text on red bar
+        statusLabel.setForeground(Color.BLACK);
         statusLabel.setOpaque(true);
 
-        // 4. Layout Assembly
         JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
         contentPanel.setBackground(BG_DARK);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
@@ -88,14 +80,14 @@ public class CardGUI extends JFrame {
             File iconFile = new File(TASKBAR_ICON_FILE);
             if (iconFile.exists()) {
                 Image iconImage = new ImageIcon(iconFile.getAbsolutePath()).getImage();
-                this.setIconImage(iconImage); // Set the taskbar and window icon
+                this.setIconImage(iconImage);
             }
         } catch (Exception e) {
             System.err.println("Failed to load application icon: " + e.getMessage());
         }
 
 
-        // Add Title
+
         JLabel mainTitle = new JLabel("CARD INVENTORY MANAGER", SwingConstants.CENTER);
         mainTitle.setFont(TITLE_FONT);
         mainTitle.setForeground(ACCENT_RED);
@@ -106,12 +98,9 @@ public class CardGUI extends JFrame {
 
         add(contentPanel, BorderLayout.CENTER);
         add(statusLabel, BorderLayout.SOUTH);
-
-        // Set initial visibility and center the window
         setLocationRelativeTo(null);
         setVisible(true);
 
-        // Initial render of data
         refreshTable();
     }
 
@@ -161,8 +150,6 @@ public class CardGUI extends JFrame {
      */
     private void launchGUI(JFrame frame) {
         frame.setVisible(true);
-        // We dispose of the current frame to show the Dashboard as the primary interface
-        // if navigating back, but keep it open if navigating to a utility window.
         if (frame instanceof DashboardGUI) {
             this.dispose();
         }
@@ -197,23 +184,18 @@ public class CardGUI extends JFrame {
         };
         dataTable = new JTable(tableModel);
 
-        // --- Table Styling ---
-        dataTable.setBackground(BG_DARK.brighter()); // Slightly lighter dark background
+        dataTable.setBackground(BG_DARK.brighter());
         dataTable.setForeground(FG_LIGHT);
         dataTable.setFont(new Font("Arial", Font.PLAIN, 12));
         dataTable.setSelectionBackground(ACCENT_RED.darker());
         dataTable.setSelectionForeground(Color.WHITE);
         dataTable.setRowHeight(25);
-
-        // Header Styling
         JTableHeader header = dataTable.getTableHeader();
         header.setBackground(new Color(60, 60, 60)); // Dark header
         header.setForeground(FG_LIGHT);
         header.setFont(BOLD_FONT);
 
         dataTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        // Configure column widths for readability
         dataTable.getColumnModel().getColumn(0).setPreferredWidth(30);
         dataTable.getColumnModel().getColumn(1).setPreferredWidth(150);
         dataTable.getColumnModel().getColumn(5).setPreferredWidth(50);
@@ -231,12 +213,12 @@ public class CardGUI extends JFrame {
     private JPanel createFormPanel() {
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new GridBagLayout());
-        formPanel.setBackground(BG_DARK.brighter()); // Use a prominent dark color for the form
+        formPanel.setBackground(BG_DARK.brighter());
         formPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(ACCENT_RED, 2),
                 "Card Details (Create / Edit)",
-                TitledBorder.LEFT, // FIX 3
-                TitledBorder.TOP, // FIX 4
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
                 BOLD_FONT.deriveFont(Font.ITALIC, 14),
                 FG_LIGHT));
         formPanel.setPreferredSize(new Dimension(350, 600));
@@ -246,12 +228,10 @@ public class CardGUI extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JPanel inputGrid = new JPanel(new GridBagLayout());
-        inputGrid.setOpaque(false); // Make transparent to show formPanel background
+        inputGrid.setOpaque(false);
 
-        // --- Input Fields Layout ---
         int y = 0;
 
-        // Helper to create a dark label
         JLabel nameLabel = new JLabel("Name:");
         nameLabel.setForeground(FG_LIGHT);
 
@@ -283,13 +263,13 @@ public class CardGUI extends JFrame {
 
         gbc.gridx = 0; gbc.gridy = y; gbc.gridwidth = 2; gbc.weightx = 1.0; inputGrid.add(ptTitle, gbc);
         gbc.gridx = 0; gbc.gridy = y + 1; inputGrid.add(ptPanel, gbc);
-        y += 2; gbc.gridwidth = 1; // Reset gridwidth
+        y += 2; gbc.gridwidth = 1; // Resets
 
         // Edition
         gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0; JLabel editionLabel = new JLabel("Edition:"); editionLabel.setForeground(FG_LIGHT); inputGrid.add(editionLabel, gbc);
         gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0; inputGrid.add(editionField, gbc);
 
-        // Status (Dropdown)
+        // Status (dropdown)
         gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0; JLabel statusLabel = new JLabel("Status:"); statusLabel.setForeground(FG_LIGHT); inputGrid.add(statusLabel, gbc);
         gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0; inputGrid.add(statusComboBox, gbc);
         statusComboBox.setBackground(INPUT_BG);
@@ -297,7 +277,7 @@ public class CardGUI extends JFrame {
         statusComboBox.setBorder(BorderFactory.createLineBorder(new Color(80, 80, 80), 1));
 
 
-        // Card Text (TextArea)
+        // Card text
         gbc.gridx = 0; gbc.gridy = y; gbc.gridwidth = 2; gbc.weightx = 1.0;
         JLabel textLabel = new JLabel("Card Text:"); textLabel.setForeground(FG_LIGHT); inputGrid.add(textLabel, gbc);
         gbc.gridx = 0; gbc.gridy = y + 1; gbc.weighty = 0.5;
@@ -309,17 +289,14 @@ public class CardGUI extends JFrame {
         textField.setForeground(FG_LIGHT);
 
         inputGrid.add(textScrollPane, gbc);
-        y += 2; gbc.weighty = 0; gbc.gridwidth = 1; // Reset
+        y += 2; gbc.weighty = 0; gbc.gridwidth = 1; // Resets
 
-
-        // --- Button Panel ---
         JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 10, 10));
         buttonPanel.setOpaque(false);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
-        // Styled Buttons
         styleButton(addButton, ACCENT_RED.darker());
-        styleButton(updateButton, new Color(50, 150, 255)); // Blue for Update
+        styleButton(updateButton, new Color(50, 150, 255));
         styleButton(deleteButton, Color.RED);
 
         JButton clearButton = new JButton(new AbstractAction("Clear Form") {
@@ -328,31 +305,27 @@ public class CardGUI extends JFrame {
                 clearForm();
             }
         });
-        styleButton(clearButton, new Color(90, 90, 90)); // Grey for Clear
+        styleButton(clearButton, new Color(90, 90, 90));
 
         buttonPanel.add(addButton);
         buttonPanel.add(updateButton);
         buttonPanel.add(deleteButton);
         buttonPanel.add(clearButton);
 
-        // --- Final Assembly of Form Panel ---
         GridBagConstraints gbcForm = new GridBagConstraints();
         gbcForm.insets = new Insets(10, 10, 10, 10);
         gbcForm.fill = GridBagConstraints.HORIZONTAL;
 
-        // Add input grid
         gbcForm.gridx = 0;
         gbcForm.gridy = 0;
         gbcForm.weightx = 1.0;
         gbcForm.weighty = 0;
         formPanel.add(inputGrid, gbcForm);
 
-        // Add button panel
         gbcForm.gridy = 1;
         gbcForm.weighty = 0;
         formPanel.add(buttonPanel, gbcForm);
 
-        // Filler component to push elements to the top
         gbcForm.gridy = 2;
         gbcForm.weighty = 1.0;
         formPanel.add(new JLabel(""), gbcForm);
@@ -362,7 +335,7 @@ public class CardGUI extends JFrame {
     }
 
     /**
-     * Helper method to style buttons uniformly.
+     * Helper method to style buttons
      */
     private void styleButton(JButton button, Color bgColor) {
         button.setFont(BOLD_FONT.deriveFont(14f));
@@ -374,7 +347,7 @@ public class CardGUI extends JFrame {
 
 
     /**
-     * Initializes all input fields, including new ones for the Card entity.
+     * Initializes input fields
      */
     private void initializeForm() {
         nameField = createThemedField(15);
@@ -400,9 +373,6 @@ public class CardGUI extends JFrame {
         deleteButton.addActionListener(this::handleDelete);
     }
 
-    /**
-     * Finds the selected record in the current table data by ID and loads it into the form.
-     */
     private void loadRecordIntoForm(int selectedRow) {
         if (selectedRow >= 0) {
             try {
@@ -485,8 +455,6 @@ public class CardGUI extends JFrame {
             statusLabel.setText("ERROR: Failed to load data. See console for SQL errors.");
         }
     }
-
-    // --- Event Handlers (CRUD Logic calling Controller) ---
 
     private void handleAdd(ActionEvent e) {
         String name = nameField.getText().trim();
