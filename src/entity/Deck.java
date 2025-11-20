@@ -22,7 +22,6 @@ public class Deck {
         this.deckName = deckName;
         this.ownerID = ownerID;
         this.bracketNum = bracketNum;
-        this.manaBase = manaBase;
         this.description = description;
         this.deckCards = new ArrayList<>();
 

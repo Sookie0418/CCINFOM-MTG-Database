@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.net.URL;
 
 /**
  * Swing frame responsible for handling user authentication (Login).
@@ -23,9 +24,9 @@ public class LoginGUI extends JFrame {
     private final JPasswordField passwordField;
 
     // Image files
-    private static final String BACKGROUND_FILE = "/src/gui/images/bg.png";
-    private static final String TASKBAR_ICON_FILE = "/src/gui/images/taskbar_icon.png";
-    private static final String LOGO_FILE = "/src/gui/images/logo.png";
+    private static final String BACKGROUND_FILE = "/images/bg.png";
+    private static final String TASKBAR_ICON_FILE = "/images/taskbar_icon.png";
+    private static final String LOGO_FILE = "/images/logo.png";
 
     // Colors
     private static final Color BG_DARK = new Color(10, 10, 15);
@@ -54,9 +55,9 @@ public class LoginGUI extends JFrame {
         setLocationRelativeTo(null);
 
         try {
-            File iconFile = new File(TASKBAR_ICON_FILE);
-            if (iconFile.exists()) {
-                Image iconImage = new ImageIcon(iconFile.getAbsolutePath()).getImage();
+            URL iconUrl = getClass().getResource(TASKBAR_ICON_FILE);
+            if (iconUrl != null) {
+                Image iconImage = new ImageIcon(iconUrl).getImage();
                 this.setIconImage(iconImage); // Set the taskbar and window icon
             }
         } catch (Exception e) {
@@ -171,9 +172,9 @@ public class LoginGUI extends JFrame {
     private JLabel createLogoLabel() {
         JLabel label = new JLabel();
         try {
-            File imageFile = new File(LOGO_FILE);
-            if (imageFile.exists()) {
-                ImageIcon originalIcon = new ImageIcon(imageFile.getAbsolutePath());
+            URL logoUrl = getClass().getResource(LOGO_FILE);
+            if (logoUrl != null) {
+                ImageIcon originalIcon = new ImageIcon(logoUrl);
                 Image scaledImage = originalIcon.getImage().getScaledInstance(LOGO_WIDTH, LOGO_HEIGHT, Image.SCALE_SMOOTH);
                 label.setIcon(new ImageIcon(scaledImage));
                 label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -283,9 +284,9 @@ public class LoginGUI extends JFrame {
 
         public StaticBackgroundPanel() {
             try {
-                File imageFile = new File(BACKGROUND_FILE);
-                if (imageFile.exists()) {
-                    staticBackgroundImage = new ImageIcon(imageFile.getAbsolutePath()).getImage();
+                URL bgUrl = getClass().getResource(BACKGROUND_FILE);
+                if (bgUrl != null) {
+                    staticBackgroundImage = new ImageIcon(bgUrl).getImage();
                 }
             } catch (Exception e) {
                 System.err.println("Error loading static background image: " + e.getMessage());
