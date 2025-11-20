@@ -207,7 +207,7 @@ public class LoginGUI extends JFrame {
         JButton minimizeButton = createControlButton("_", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setExtendedState(JFrame.ICONIFIED);
+                setState(JFrame.ICONIFIED);
             }
         });
 
