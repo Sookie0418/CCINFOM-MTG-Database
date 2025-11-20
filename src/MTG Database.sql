@@ -16,7 +16,7 @@ CREATE TABLE card (
     card_id INT AUTO_INCREMENT PRIMARY KEY,
     card_name VARCHAR(100) NOT NULL,
     card_mana_cost VARCHAR(50),
-    card_type VARCHAR(50),
+    card_typcarde VARCHAR(50),
     card_subtype VARCHAR(50),
     card_power VARCHAR(10),
     card_toughness VARCHAR(10),
