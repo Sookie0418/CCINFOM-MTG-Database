@@ -45,6 +45,26 @@ public class MTGDatabaseController {
     public boolean validateUser(String username, String password) {
         // TODO: Replace with actual database validation using a UserTransactions class.
         // TODO: Replace registerPlayer with registerUser and use this for validation.
+        Path filePath = Paths.get("LoginInfo.txt");
+        if (!Files.exists(filePath)) {
+            System.out.println("Login file not found.");
+            return false;
+        }
+        try {
+            boolean isValid = Files.lines(filePath)
+                    .map(line -> line.split(" "))
+                    .filter(parts -> parts.length >= 2)
+                    .anyMatch(parts -> parts[0].equals(username) && parts[1].equals(password));
+
+            if (!isValid) {
+                System.out.println("Invalid username or password.");
+            }
+            return isValid;
+
+        } catch (IOException e) {
+            System.out.println("Error reading login file: " + e.getMessage());
+            return false;
+        }
         return "admin".equals(username) && "password".equals(password);
     }
 
