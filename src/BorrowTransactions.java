@@ -11,13 +11,13 @@ public class BorrowTransactions {
 
     /**
      * Checks if a deck is currently available.
-     * Logic: A deck is unavailable if it is in 'Approved' or 'Pending' status 
+     * Logic: A deck is unavailable if it is in 'Approved' or 'Pending' status
      * and has not been returned yet.
      */
     public boolean isDeckAvailable(int deckId) {
         Connection conn = dbConnection.getConnection();
         String sql = "SELECT COUNT(*) FROM borrow_request WHERE deck_id = ? AND status IN ('Pending', 'Approved')";
-        
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, deckId);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -65,7 +65,7 @@ public class BorrowTransactions {
     public boolean returnDeck(int borrowCode) {
         Connection conn = dbConnection.getConnection();
         String sql = "UPDATE borrow_request SET status = 'Returned', return_date = ? WHERE borrow_code = ?";
-        
+
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setDate(1, Date.valueOf(LocalDate.now()));
             pstmt.setInt(2, borrowCode);
