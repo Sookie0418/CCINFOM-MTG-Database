@@ -17,7 +17,7 @@ public class CardFactory {
         String cardEdition = rs.getString("card_edition");
         String cardStatus = rs.getString("card_status");
 
-        // Convert power and toughness to integers
+        // Convert power/toughness to integers (handle nulls and non-numeric values)
         Integer power = null;
         Integer toughness = null;
 
@@ -29,10 +29,11 @@ public class CardFactory {
                 toughness = Integer.parseInt(toughnessStr);
             }
         } catch (NumberFormatException e) {
-            // If it's not a number leave as null
+            // If it's not a number (like "*"), leave as null
             System.out.println("Warning: Could not parse power/toughness for card: " + cardName);
         }
 
+        // Create the appropriate card type based on card type string
         String typeLower = cardType.toLowerCase();
 
         if (typeLower.contains("creature")) {
@@ -77,6 +78,8 @@ public class CardFactory {
                     cardStatus != null ? cardStatus : "Legal"
             );
         } else if (typeLower.contains("enchantment")) {
+            // You might want to create an Enchantment class later
+            // For now, return as Artifact as a fallback
             return new Artifact(
                     cardId, cardName, manaCost != null ? manaCost : "",
                     cardType, cardSubtype != null ? cardSubtype : "",
@@ -85,6 +88,7 @@ public class CardFactory {
                     cardStatus != null ? cardStatus : "Legal"
             );
         } else {
+            // Default fallback - treat as Artifact
             System.out.println("Unknown card type: " + cardType + " for card: " + cardName + ". Defaulting to Artifact.");
             return new Artifact(
                     cardId, cardName, manaCost != null ? manaCost : "",
@@ -96,10 +100,13 @@ public class CardFactory {
         }
     }
 
+    // Method to create a card from individual parameters (useful for testing)
     public static Card createCard(int cardId, String cardName, String manaCost, String cardType,
                                   String cardSubtype, String power, String toughness,
                                   String cardText, String cardEdition, String cardStatus) {
 
+        // This is a simplified version - you'd want to handle the type logic here too
+        // For now, let's assume it's a creature if it has power/toughness
         if (power != null && !power.isEmpty() && toughness != null && !toughness.isEmpty()) {
             try {
                 int p = Integer.parseInt(power);
@@ -107,8 +114,11 @@ public class CardFactory {
                 return new Creature(cardId, cardName, manaCost, cardType, cardSubtype,
                         p, t, cardText, cardEdition, cardStatus);
             } catch (NumberFormatException e) {
+                // Not a creature with numeric power/toughness
             }
         }
+
+        // Default to Artifact for non-creatures in this simple factory
         return new Artifact(cardId, cardName, manaCost, cardType, cardSubtype,
                 cardText, cardEdition, cardStatus);
     }

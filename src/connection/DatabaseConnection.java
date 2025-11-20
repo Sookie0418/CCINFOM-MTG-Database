@@ -2,10 +2,13 @@ package connection;
 import java.sql.*;
 
 public class DatabaseConnection {
+    // Database configuration constants
+    // FIX: Added 'serverTimezone=UTC' to the URL to resolve the time zone error.
     private static final String URL = "jdbc:mysql://127.0.0.1:3306/mtg_commander_db?serverTimezone=UTC&useSSL=false";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "January122006";
 
+    // Static connection instance to be shared across the application
     private static Connection sharedConnection = null;
 
     /**
@@ -13,8 +16,12 @@ public class DatabaseConnection {
      */
     static {
         try {
+            // 1. Load the MySQL JDBC Driver
             Class.forName("com.mysql.cj.jdbc.Driver");
             System.out.println("JDBC Driver loaded successfully.");
+
+            // 2. Establish the connection
+            // The connection URL now includes the necessary timezone configuration.
             sharedConnection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
             System.out.println("Database connection established successfully.");
         } catch (ClassNotFoundException e) {
@@ -38,7 +45,7 @@ public class DatabaseConnection {
      */
     public static boolean testConnection() {
         try {
-            // Check if the connection exists and if open
+            // Check if the connection object exists and is open
             return sharedConnection != null && !sharedConnection.isClosed();
         } catch (SQLException e) {
             return false;
