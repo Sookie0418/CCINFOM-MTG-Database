@@ -33,13 +33,13 @@ public class BorrowTransactions {
                 String status = rs.getString("status");
                 java.sql.Date retDate = rs.getDate("return_date");
                 requests.add(new entity.BorrowRequest(
-                    borrowCode,
-                    playerId,
-                    deckId,
-                    borrowType,
-                    reqDate != null ? reqDate.toLocalDate() : null,
-                    status,
-                    retDate != null ? retDate.toLocalDate() : null
+                        borrowCode,
+                        playerId,
+                        deckId,
+                        borrowType,
+                        reqDate != null ? reqDate.toLocalDate() : null,
+                        status,
+                        retDate != null ? retDate.toLocalDate() : null
                 ));
             }
         } catch (SQLException e) {

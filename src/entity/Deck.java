@@ -10,14 +10,19 @@ public class Deck {
     private Card commanderCard;
     private int bracketNum;
     private boolean deckValidity;
-    private String manaBase;
     private String description;
 
     private Connection connection = null;
 
     // Constructor
+    public Deck() {
+        this.deckCards = new ArrayList<>();
+        // Note: This constructor doesn't initialize database connection
+        // The connection will be handled by DeckTransactions
+    }
+
     public Deck(int deckID, String deckName, int ownerID, int bracketNum,
-                String manaBase, String description) throws SQLException, ClassNotFoundException {
+                String description) throws SQLException, ClassNotFoundException {
         this.deckID = deckID;
         this.deckName = deckName;
         this.ownerID = ownerID;
@@ -77,7 +82,11 @@ public class Deck {
         return ownerID;
     }
 
-    public Card getCommanderCardId() {
+    public int getCommanderCardId() {
+        return commanderCard != null ? commanderCard.getCardId() : 0;
+    }
+
+    public Card getCommanderCard() {
         return commanderCard;
     }
 
@@ -89,9 +98,6 @@ public class Deck {
         return deckValidity;
     }
 
-    public String getManaBase() {
-        return manaBase;
-    }
 
     public String getDescription() {
         return description;
@@ -317,12 +323,12 @@ public class Deck {
 
     // Save deck to database
     public boolean saveDeck() throws SQLException {
-        String sql = "INSERT INTO deck (deck_id, deck_name, player_id, commander_card_id, bracket_info, mana_base, salt_score, description) " +
+        String sql = "INSERT INTO deck (deck_id, deck_name, player_id, commander_card_id, bracket_info, description) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE " +
                 "deck_name = VALUES(deck_name), player_id = VALUES(player_id), " +
                 "commander_card_id = VALUES(commander_card_id), bracket_info = VALUES(bracket_info), " +
-                "mana_base = VALUES(mana_base), salt_score = VALUES(salt_score), description = VALUES(description)";
+                "description = VALUES(description)";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, deckID);
@@ -330,8 +336,7 @@ public class Deck {
             stmt.setInt(3, ownerID);
             stmt.setInt(4, commanderCard != null ? commanderCard.getCardId() : 0);
             stmt.setString(5, "Bracket " + bracketNum);
-            stmt.setString(6, manaBase);
-            stmt.setString(7, description);
+            stmt.setString(6, description);
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -346,7 +351,6 @@ public class Deck {
         System.out.println("Owner ID: " + ownerID);
         System.out.println("Commander: " + (commanderCard != null ? commanderCard.getCardName() : "None"));
         System.out.println("Bracket: " + bracketNum);
-        System.out.println("Mana Base: " + manaBase);
         System.out.println("Total Cards: " + getTotalCardCount());
         System.out.println("Validity: " + (deckValidity ? "Valid" : "Invalid"));
 
@@ -380,5 +384,54 @@ public class Deck {
         } catch (SQLException e) {
             System.err.println("Error closing connection: " + e.getMessage());
         }
+    }
+
+    // Add these setter methods to your Deck class
+
+    public void setDeckId(int deckId) {
+        this.deckID = deckId;
+    }
+
+    public void setDeckName(String deckName) {
+        this.deckName = deckName;
+    }
+
+    public void setPlayerId(int playerId) {
+        this.ownerID = playerId;
+    }
+
+    public void setCommanderCardId(int commanderCardId) {
+        // This sets the commander card ID - you might need to load the actual card object
+        // For now, we'll just store the ID
+        if (this.commanderCard != null) {
+            this.commanderCard = null; // Clear current commander
+        }
+        // Note: You'll need to load the actual Card object if needed
+    }
+
+    public void setBracketInfo(String bracketInfo) {
+        // Parse bracket number from string like "Bracket 3"
+        if (bracketInfo != null && bracketInfo.startsWith("Bracket ")) {
+            try {
+                this.bracketNum = Integer.parseInt(bracketInfo.substring(8));
+            } catch (NumberFormatException e) {
+                this.bracketNum = 0;
+            }
+        } else {
+            this.bracketNum = 0;
+        }
+    }
+
+    public void setSaltScore(double saltScore) {
+        // You might want to add a saltScore field to your class
+        // For now, we'll ignore it since your constructor doesn't have it
+    }
+
+    public void setValidity(String validity) {
+        this.deckValidity = "Valid".equalsIgnoreCase(validity);
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

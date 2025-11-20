@@ -1,6 +1,11 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
 package entity;
 
-public class Artifact implements Card{
+public class Artifact implements Card {
     private int cardID;
     private String cardName;
     private String manaCost;
@@ -10,65 +15,54 @@ public class Artifact implements Card{
     private String cardEdition;
     private String cardStatus;
 
-    public Artifact(int cardID, String cardName, String manaCost, String cardType, String cardSubtype,
-                    String cardText, String cardEdition, String cardStatus) {
-        this.cardID = cardID;
-        this.cardName = cardName;
-        this.manaCost = manaCost;
-        this.cardType = cardType;
-        this.cardSubtype = cardSubtype;
-        this.cardText = cardText;
-        this.cardEdition = cardEdition;
-        this.cardStatus = cardStatus;
+    public Artifact(int var1, String var2, String var3, String var4, String var5, String var6, String var7, String var8) {
+        this.cardID = var1;
+        this.cardName = var2;
+        this.manaCost = var3;
+        this.cardType = var4;
+        this.cardSubtype = var5;
+        this.cardText = var6;
+        this.cardEdition = var7;
+        this.cardStatus = var8;
     }
 
-    @Override
     public int getCardId() {
-        return cardID;
+        return this.cardID;
     }
 
-    @Override
     public String getCardName() {
-        return cardName;
+        return this.cardName;
     }
 
-    @Override
     public String getManaCost() {
-        return manaCost;
+        return this.manaCost;
     }
 
-    @Override
     public String getCardType() {
-        return cardType;
+        return this.cardType;
     }
 
-    @Override
     public String getCardSubtype() {
-        return cardSubtype;
+        return this.cardSubtype;
     }
 
-    @Override
     public Integer getPower() {
         return 0;
     }
 
-    @Override
     public Integer getToughness() {
         return 0;
     }
 
-    @Override
     public String getCardText() {
-        return cardText;
+        return this.cardText;
     }
 
-    @Override
     public String getCardEdition() {
-        return cardEdition;
+        return this.cardEdition;
     }
 
-    @Override
     public String getCardStatus() {
-        return cardStatus;
+        return this.cardStatus;
     }
 }

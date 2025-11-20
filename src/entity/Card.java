@@ -1,14 +1,28 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
 package entity;
 
 public interface Card {
-    public int getCardId();
-    public String getCardName();
-    public String getManaCost();
-    public String getCardType();
-    public String getCardSubtype();
-    public Integer getPower();
-    public Integer getToughness();
-    public String getCardText();
-    public String getCardEdition();
-    public String getCardStatus();
+    int getCardId();
+
+    String getCardName();
+
+    String getManaCost();
+
+    String getCardType();
+
+    String getCardSubtype();
+
+    Integer getPower();
+
+    Integer getToughness();
+
+    String getCardText();
+
+    String getCardEdition();
+
+    String getCardStatus();
 }

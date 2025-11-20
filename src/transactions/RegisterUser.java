@@ -7,8 +7,8 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 
 /**
- * Utility class containing the command-line interface (CLI) logic for 
- * player registration. This class is designed to be called by the 
+ * Utility class containing the command-line interface (CLI) logic for
+ * player registration. This class is designed to be called by the
  * MTGDatabaseDriver.
  * NOTE: Does not contain a main method.
  */
@@ -20,7 +20,7 @@ public class RegisterUser {
      * @param scanner The application's main Scanner object for input.
      */
     public static boolean promptAndRegister(PlayerTransactions transactions, Scanner scanner) {
-        
+
         // Get First Name
         System.out.print("Enter username: ");
         String username = scanner.nextLine();

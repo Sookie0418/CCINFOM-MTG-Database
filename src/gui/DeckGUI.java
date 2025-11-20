@@ -11,6 +11,10 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
+import java.sql.SQLException;
+import java.util.Map;
+import javax.swing.JDialog;
+import javax.swing.JCheckBox;
 
 /**
  * A Java Swing GUI for managing Decks and Deck Transactions.
@@ -43,6 +47,7 @@ public class DeckGUI extends JFrame {
     private JButton createDeckButton;
     private JButton validateDeckButton;
     private JButton addCardButton;
+    private JButton viewCardsButton;
     private JButton refreshButton;
     private JButton clearButton;
     private JLabel statusLabel;
@@ -192,7 +197,8 @@ public class DeckGUI extends JFrame {
      * Creates and configures the JTable component for decks.
      */
     private void initializeTable() {
-        String[] columnNames = {"Deck ID", "Deck Name", "Player ID", "Commander ID", "Bracket Info", "Mana Base", "Salt Score", "Validity", "Description"};
+        // Remove "Mana Base" and "Salt Score" from column names
+        String[] columnNames = {"Deck ID", "Deck Name", "Player ID", "Commander ID", "Bracket Info", "Validity", "Description"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -217,16 +223,14 @@ public class DeckGUI extends JFrame {
 
         deckTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Configure column widths
+        // Configure column widths (adjusted for removed columns)
         deckTable.getColumnModel().getColumn(0).setPreferredWidth(60);
         deckTable.getColumnModel().getColumn(1).setPreferredWidth(120);
         deckTable.getColumnModel().getColumn(2).setPreferredWidth(70);
         deckTable.getColumnModel().getColumn(3).setPreferredWidth(90);
         deckTable.getColumnModel().getColumn(4).setPreferredWidth(100);
-        deckTable.getColumnModel().getColumn(5).setPreferredWidth(100);
-        deckTable.getColumnModel().getColumn(6).setPreferredWidth(80);
-        deckTable.getColumnModel().getColumn(7).setPreferredWidth(70);
-        deckTable.getColumnModel().getColumn(8).setPreferredWidth(150);
+        deckTable.getColumnModel().getColumn(5).setPreferredWidth(70);
+        deckTable.getColumnModel().getColumn(6).setPreferredWidth(150);
 
         deckTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && deckTable.getSelectedRow() != -1) {
@@ -268,6 +272,8 @@ public class DeckGUI extends JFrame {
         inputGrid.add(deckIdLabel, gbc);
 
         gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0;
+        deckIdField.setEditable(true);
+        deckIdField.setBackground(new Color(60, 60, 60));
         inputGrid.add(deckIdField, gbc);
 
         // Deck Name
@@ -329,7 +335,7 @@ public class DeckGUI extends JFrame {
         y += 2; gbc.weighty = 0; gbc.gridwidth = 1;
 
         // --- Button Panel ---
-        JPanel buttonPanel = new JPanel(new GridLayout(5, 1, 10, 10));
+        JPanel buttonPanel = new JPanel(new GridLayout(6, 1, 10, 10));
         buttonPanel.setOpaque(false);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
@@ -337,12 +343,14 @@ public class DeckGUI extends JFrame {
         styleButton(createDeckButton, new Color(0, 150, 0)); // Green for create
         styleButton(validateDeckButton, new Color(255, 140, 0)); // Orange for validate
         styleButton(addCardButton, new Color(70, 130, 180)); // Steel blue for add card
+        styleButton(viewCardsButton, new Color(100, 100, 200)); // Purple for view cards
         styleButton(refreshButton, new Color(100, 100, 100)); // Gray for refresh
         styleButton(clearButton, new Color(90, 90, 90)); // Dark gray for clear
 
         buttonPanel.add(createDeckButton);
         buttonPanel.add(validateDeckButton);
         buttonPanel.add(addCardButton);
+        buttonPanel.add(viewCardsButton);
         buttonPanel.add(refreshButton);
         buttonPanel.add(clearButton);
 
@@ -401,6 +409,7 @@ public class DeckGUI extends JFrame {
         createDeckButton = new JButton("Create New Deck");
         validateDeckButton = new JButton("Validate Deck");
         addCardButton = new JButton("Add Card to Deck");
+        viewCardsButton = new JButton("View Deck Cards");
         refreshButton = new JButton("Refresh Table");
         clearButton = new JButton("Clear Form");
 
@@ -408,6 +417,7 @@ public class DeckGUI extends JFrame {
         createDeckButton.addActionListener(this::handleCreateDeck);
         validateDeckButton.addActionListener(this::handleValidateDeck);
         addCardButton.addActionListener(this::handleAddCardToDeck);
+        viewCardsButton.addActionListener(this::handleViewDeckCards);
         refreshButton.addActionListener(e -> refreshTable());
         clearButton.addActionListener(e -> clearForm());
     }
@@ -415,30 +425,69 @@ public class DeckGUI extends JFrame {
     /**
      * Loads the selected deck record into the form.
      */
+    /**
+     * Loads the selected deck record into the form.
+     */
+    /**
+     * Loads the selected deck record into the form.
+     */
+    /**
+     * Loads the selected deck record into the form.
+     */
+    /**
+     * Loads the selected deck record into the form.
+     */
     private void loadDeckRecordIntoForm(int selectedRow) {
         if (selectedRow >= 0) {
             try {
-                int deckId = (int) tableModel.getValueAt(selectedRow, 0);
-                String deckName = (String) tableModel.getValueAt(selectedRow, 1);
-                int playerId = (int) tableModel.getValueAt(selectedRow, 2);
-                String bracketInfo = (String) tableModel.getValueAt(selectedRow, 4);
-                String validity = (String) tableModel.getValueAt(selectedRow, 7);
-                String description = (String) tableModel.getValueAt(selectedRow, 8);
+                // Get all values from the selected row with proper type handling
+                Object deckIdObj = tableModel.getValueAt(selectedRow, 0);
+                Object deckNameObj = tableModel.getValueAt(selectedRow, 1);
+                Object playerIdObj = tableModel.getValueAt(selectedRow, 2);
+                Object commanderIdObj = tableModel.getValueAt(selectedRow, 3);
+                Object bracketInfoObj = tableModel.getValueAt(selectedRow, 4);
+                Object validityObj = tableModel.getValueAt(selectedRow, 5);
+                Object descriptionObj = tableModel.getValueAt(selectedRow, 6);
 
-                deckIdField.setText(String.valueOf(deckId));
+                // Convert to appropriate types
+                int deckId = deckIdObj != null ? Integer.parseInt(deckIdObj.toString()) : -1;
+                String deckName = deckNameObj != null ? deckNameObj.toString() : "";
+                int playerId = playerIdObj != null ? Integer.parseInt(playerIdObj.toString()) : -1;
+                Integer commanderId = null;
+                if (commanderIdObj != null && !commanderIdObj.toString().isEmpty()) {
+                    commanderId = Integer.parseInt(commanderIdObj.toString());
+                }
+                String bracketInfo = bracketInfoObj != null ? bracketInfoObj.toString() : "";
+                String validity = validityObj != null ? validityObj.toString() : "";
+                String description = descriptionObj != null ? descriptionObj.toString() : "";
+
+                // Populate fields
+                deckIdField.setText(deckId != -1 ? String.valueOf(deckId) : "");
                 deckNameField.setText(deckName);
-                playerIdField.setText(String.valueOf(playerId));
+                playerIdField.setText(playerId != -1 ? String.valueOf(playerId) : "");
                 bracketInfoField.setText(bracketInfo);
-                descriptionArea.setText(description != null ? description : "");
+                descriptionArea.setText(description);
 
-                statusArea.setText("Selected Deck ID: " + deckId + "\n" +
+                // Enable operations for existing deck
+                validateDeckButton.setEnabled(true);
+                addCardButton.setEnabled(true);
+                viewCardsButton.setEnabled(true);
+
+                statusArea.setText("📋 DECK SELECTED\n\n" +
+                        "Deck ID: " + deckId + "\n" +
                         "Deck Name: " + deckName + "\n" +
                         "Player ID: " + playerId + "\n" +
-                        "Validity: " + validity);
+                        "Commander ID: " + (commanderId != null ? commanderId : "Not set") + "\n" +
+                        "Current Validity: " + validity + "\n\n" +
+                        "Available actions:\n" +
+                        "• Add more cards\n" +
+                        "• Validate deck\n" +
+                        "• View current cards");
 
-                statusLabel.setText("Editing Deck ID: " + deckId);
+                statusLabel.setText("Editing Deck: " + deckName + " (ID: " + deckId + ")");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Error loading deck record: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace(); // Add this for debugging
             }
         }
     }
@@ -460,11 +509,13 @@ public class DeckGUI extends JFrame {
     /**
      * Retrieves the deck data and updates the JTable model.
      */
+    /**
+     * Retrieves the deck data and updates the JTable model.
+     */
     private void refreshTable() {
         tableModel.setRowCount(0);
 
         try {
-            // Note: You'll need to add getAllDecks() method to your controller
             List<Deck> decks = controller.getAllDecks();
 
             for (Deck deck : decks) {
@@ -472,11 +523,10 @@ public class DeckGUI extends JFrame {
                         deck.getDeckId(),
                         deck.getDeckName(),
                         deck.getPlayerId(),
-                        deck.getCommanderCardId(),
-                        deck.getBracketNum(),
-                        deck.getManaBase(),
-                        deck.getValidity(),
-                        deck.getDescription()
+                        deck.getCommanderCardId(),  // This should be column 3
+                        deck.getBracketNum(),       // This should be column 4
+                        deck.getValidity(),         // This should be column 5 (was column 7 before)
+                        deck.getDescription()       // This should be column 6 (was column 8 before)
                 };
                 tableModel.addRow(rowData);
             }
@@ -513,10 +563,15 @@ public class DeckGUI extends JFrame {
                 return;
             }
 
-            // Note: You'll need to add createDeck() method to your controller
             int newDeckId = controller.createDeck(deckName, playerId, bracketInfo, description);
 
             if (newDeckId != -1) {
+                deckIdField.setText(String.valueOf(newDeckId));
+
+                validateDeckButton.setEnabled(true);
+                addCardButton.setEnabled(true);
+                viewCardsButton.setEnabled(true);
+
                 statusArea.setText("Deck created successfully!\n" +
                         "Deck ID: " + newDeckId + "\n" +
                         "Deck Name: " + deckName + "\n" +
@@ -566,28 +621,396 @@ public class DeckGUI extends JFrame {
     }
 
     private void handleAddCardToDeck(ActionEvent e) {
-        // This would typically open a dialog for card selection
-        // For now, we'll show a message about required parameters
-        JOptionPane.showMessageDialog(this,
-                "To add a card to a deck, you need:\n" +
-                        "- Deck ID\n" +
-                        "- Card ID\n" +
-                        "- Quantity\n" +
-                        "- Is Commander (true/false)\n\n" +
-                        "This feature would typically open a card selection dialog.",
-                "Add Card to Deck",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    public static void main(String[] args) {
-        // For testing purposes
-        SwingUtilities.invokeLater(() -> {
-            try {
-                MTGDatabaseController controller = new MTGDatabaseController();
-                new DeckGUI(controller);
-            } catch (Exception e) {
-                e.printStackTrace();
+        try {
+            String deckIdText = deckIdField.getText().trim();
+            if (deckIdText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please select a deck first.", "No Deck Selected", JOptionPane.WARNING_MESSAGE);
+                return;
             }
-        });
+
+            int deckId = Integer.parseInt(deckIdText);
+
+            // Create dialog for adding cards
+            JDialog addCardDialog = new JDialog(this, "Add Card to Deck " + deckId, true);
+            addCardDialog.setLayout(new BorderLayout());
+            addCardDialog.setSize(500, 350);
+            addCardDialog.setLocationRelativeTo(this);
+
+            JPanel mainPanel = new JPanel(new BorderLayout());
+            mainPanel.setBackground(BG_DARK);
+            mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            // Input fields
+            JPanel inputPanel = new JPanel(new GridLayout(5, 2, 10, 10));
+            inputPanel.setBackground(BG_DARK);
+            inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            JLabel cardIdLabel = new JLabel("Card ID:");
+            cardIdLabel.setForeground(FG_LIGHT);
+            JTextField cardIdField = createThemedField(10);
+
+            JLabel cardInfoLabel = new JLabel("Card Info:");
+            cardInfoLabel.setForeground(FG_LIGHT);
+            JTextArea cardInfoArea = new JTextArea(3, 20);
+            cardInfoArea.setEditable(false);
+            cardInfoArea.setBackground(INPUT_BG);
+            cardInfoArea.setForeground(FG_LIGHT);
+            cardInfoArea.setBorder(BorderFactory.createLineBorder(new Color(80, 80, 80), 1));
+            JScrollPane cardInfoScroll = new JScrollPane(cardInfoArea);
+
+            JLabel quantityLabel = new JLabel("Quantity:");
+            quantityLabel.setForeground(FG_LIGHT);
+            JTextField quantityField = createThemedField(5);
+            quantityField.setText("1");
+
+            JLabel isCommanderLabel = new JLabel("Is Commander:");
+            isCommanderLabel.setForeground(FG_LIGHT);
+            JCheckBox isCommanderCheckbox = new JCheckBox();
+            isCommanderCheckbox.setBackground(BG_DARK);
+            isCommanderCheckbox.setForeground(FG_LIGHT);
+
+            // Add card lookup functionality
+            JButton lookupButton = new JButton("Lookup Card");
+            styleButton(lookupButton, new Color(70, 130, 180));
+            lookupButton.addActionListener(lookupEvt -> {
+                try {
+                    int cardId = Integer.parseInt(cardIdField.getText().trim());
+                    // Get card info from controller
+                    entity.Card card = controller.getCardById(cardId);
+                    if (card != null) {
+                        cardInfoArea.setText("Name: " + card.getCardName() + "\n" +
+                                "Type: " + card.getCardType() + "\n" +
+                                "Mana Cost: " + card.getManaCost() + "\n" +
+                                "Status: " + card.getCardStatus());
+
+                        // Auto-check commander for legendary creatures
+                        if (card.getCardType().toLowerCase().contains("legendary") &&
+                                card.getCardType().toLowerCase().contains("creature")) {
+                            isCommanderCheckbox.setSelected(true);
+                            cardInfoArea.append("\n⚜️ Legendary Creature - Can be Commander");
+                        }
+                    } else {
+                        cardInfoArea.setText("Card not found with ID: " + cardId);
+                        isCommanderCheckbox.setSelected(false);
+                    }
+                } catch (NumberFormatException ex) {
+                    cardInfoArea.setText("Please enter a valid Card ID");
+                } catch (SQLException ex) {
+                    cardInfoArea.setText("Database error: " + ex.getMessage());
+                }
+            });
+
+            inputPanel.add(cardIdLabel);
+            inputPanel.add(cardIdField);
+            inputPanel.add(new JLabel()); // spacer
+            inputPanel.add(lookupButton);
+            inputPanel.add(cardInfoLabel);
+            inputPanel.add(new JLabel()); // spacer for layout
+            inputPanel.add(new JLabel()); // spacer
+            inputPanel.add(cardInfoScroll);
+            inputPanel.add(quantityLabel);
+            inputPanel.add(quantityField);
+            inputPanel.add(isCommanderLabel);
+            inputPanel.add(isCommanderCheckbox);
+
+            // Buttons
+            JPanel buttonPanel = new JPanel(new FlowLayout());
+            buttonPanel.setBackground(BG_DARK);
+
+            JButton addButton = new JButton("Add Card");
+            styleButton(addButton, new Color(0, 150, 0));
+
+            JButton cancelButton = new JButton("Cancel");
+            styleButton(cancelButton, new Color(100, 100, 100));
+
+            buttonPanel.add(addButton);
+            buttonPanel.add(cancelButton);
+
+            // Add action listeners
+            addButton.addActionListener(evt -> {
+                try {
+                    int cardId = Integer.parseInt(cardIdField.getText().trim());
+                    int quantity = Integer.parseInt(quantityField.getText().trim());
+                    boolean isCommander = isCommanderCheckbox.isSelected();
+
+                    if (cardId <= 0 || quantity <= 0) {
+                        JOptionPane.showMessageDialog(addCardDialog, "Card ID and Quantity must be positive numbers.", "Input Error", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+
+                    if (quantity > 4 && !isCommander) {
+                        int confirm = JOptionPane.showConfirmDialog(addCardDialog,
+                                "Normal cards are typically limited to 4 copies. Are you sure you want to add " + quantity + " copies?",
+                                "Quantity Warning",
+                                JOptionPane.YES_NO_OPTION);
+                        if (confirm != JOptionPane.YES_OPTION) {
+                            return;
+                        }
+                    }
+
+                    // Validate commander rules
+                    if (isCommander) {
+                        try {
+                            entity.Card card = controller.getCardById(cardId);
+                            if (card != null && (!card.getCardType().toLowerCase().contains("legendary") ||
+                                    !card.getCardType().toLowerCase().contains("creature"))) {
+                                int confirm = JOptionPane.showConfirmDialog(addCardDialog,
+                                        "This card doesn't appear to be a Legendary Creature. " +
+                                                "Only Legendary Creatures can be commanders. Continue anyway?",
+                                        "Commander Warning",
+                                        JOptionPane.YES_NO_OPTION);
+                                if (confirm != JOptionPane.YES_OPTION) {
+                                    return;
+                                }
+                            }
+                        } catch (SQLException ex) {
+                            // Continue anyway if we can't validate
+                        }
+                    }
+
+                    // Call controller to add card to deck
+                    boolean success = controller.addCardToDeck(deckId, cardId, quantity, isCommander);
+
+                    if (success) {
+                        JOptionPane.showMessageDialog(addCardDialog,
+                                "Card successfully added to deck!\n" +
+                                        "Card ID: " + cardId + "\n" +
+                                        "Quantity: " + quantity + "\n" +
+                                        "Is Commander: " + (isCommander ? "Yes" : "No"),
+                                "Success",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        addCardDialog.dispose();
+
+                        // Update status
+                        statusArea.setText("Card added to deck!\n\n" +
+                                "Deck ID: " + deckId + "\n" +
+                                "Card ID: " + cardId + "\n" +
+                                "Quantity: " + quantity + "\n" +
+                                "Commander: " + (isCommander ? "Yes" : "No"));
+                        statusLabel.setText("Card added to deck " + deckId);
+
+                        // Auto-validate deck after adding cards
+                        refreshTable();
+                    } else {
+                        JOptionPane.showMessageDialog(addCardDialog,
+                                "Failed to add card to deck.\n" +
+                                        "Possible reasons:\n" +
+                                        "- Card doesn't exist\n" +
+                                        "- Card is banned\n" +
+                                        "- Database error",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(addCardDialog, "Card ID and Quantity must be valid numbers.", "Input Error", JOptionPane.WARNING_MESSAGE);
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(addCardDialog, "Database error: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(addCardDialog, "Error adding card: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            });
+
+            cancelButton.addActionListener(evt -> addCardDialog.dispose());
+
+            mainPanel.add(new JLabel("Add Card to Deck " + deckId, SwingConstants.CENTER), BorderLayout.NORTH);
+            mainPanel.add(inputPanel, BorderLayout.CENTER);
+            mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+            addCardDialog.add(mainPanel);
+            addCardDialog.setVisible(true);
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid deck ID.", "Input Error", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    /**
+     * Shows the cards currently in the selected deck
+     */
+    /**
+     * Shows the cards currently in the selected deck
+     */
+    /**
+     * Shows the cards currently in the selected deck
+     */
+    private void handleViewDeckCards(ActionEvent e) {
+        try {
+            String deckIdText = deckIdField.getText().trim();
+            if (deckIdText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please select a deck first.", "No Deck Selected", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int deckId = Integer.parseInt(deckIdText);
+
+            // Create dialog to show cards
+            JDialog cardsDialog = new JDialog(this, "Cards in Deck " + deckId, true);
+            cardsDialog.setLayout(new BorderLayout());
+            cardsDialog.setSize(800, 500);
+            cardsDialog.setLocationRelativeTo(this);
+
+            JPanel mainPanel = new JPanel(new BorderLayout());
+            mainPanel.setBackground(BG_DARK);
+            mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            // Create table for cards
+            String[] columnNames = {"Card ID", "Card Name", "Type", "Mana Cost", "Power/Tough", "Quantity", "Commander"};
+            DefaultTableModel cardsModel = new DefaultTableModel(columnNames, 0) {
+                @Override
+                public Class<?> getColumnClass(int column) {
+                    return switch (column) {
+                        case 0, 5 -> Integer.class; // Card ID and Quantity are integers
+                        case 6 -> Boolean.class; // Commander is boolean
+                        default -> String.class;
+                    };
+                }
+            };
+
+            JTable cardsTable = new JTable(cardsModel);
+
+            // Style the table
+            cardsTable.setBackground(BG_DARK.brighter());
+            cardsTable.setForeground(FG_LIGHT);
+            cardsTable.setSelectionBackground(ACCENT_BLUE.darker());
+            cardsTable.setSelectionForeground(Color.WHITE);
+            cardsTable.setRowHeight(25);
+            cardsTable.setFont(new Font("Arial", Font.PLAIN, 12));
+            cardsTable.getColumnModel().getColumn(6).setPreferredWidth(80);
+
+            // Header Styling
+            JTableHeader header = cardsTable.getTableHeader();
+            header.setBackground(new Color(60, 60, 60));
+            header.setForeground(FG_LIGHT);
+            header.setFont(BOLD_FONT);
+
+            JScrollPane scrollPane = new JScrollPane(cardsTable);
+
+            try {
+                // Get cards from the deck using controller
+                List<Map<String, Object>> deckCards = controller.getCardsInDeck(deckId);
+
+                if (deckCards.isEmpty()) {
+                    cardsModel.addRow(new Object[]{"-", "No cards in deck", "-", "-", "-", 0, false});
+                } else {
+                    int totalCards = 0;
+                    boolean hasCommander = false;
+
+                    for (Map<String, Object> card : deckCards) {
+                        Integer power = null;
+                        Integer toughness = null;
+
+                        // Try to get power/toughness for creatures
+                        try {
+                            entity.Card cardDetails = controller.getCardById((Integer) card.get("card_id"));
+                            if (cardDetails != null) {
+                                power = cardDetails.getPower();
+                                toughness = cardDetails.getToughness();
+                            }
+                        } catch (Exception ex) {
+                            // Ignore if we can't get details
+                        }
+
+                        String powerTough = (power != null && power > 0 && toughness != null && toughness > 0) ?
+                                power + "/" + toughness : "-";
+
+                        Object[] rowData = {
+                                card.get("card_id"),
+                                card.get("card_name"),
+                                card.get("type"),
+                                card.get("mana_cost"),
+                                powerTough,
+                                card.get("quantity"),
+                                card.get("is_commander")
+                        };
+                        cardsModel.addRow(rowData);
+
+                        totalCards += (Integer) card.get("quantity");
+                        if ((Boolean) card.get("is_commander")) {
+                            hasCommander = true;
+                        }
+                    }
+
+                    // Update title with stats
+                    String title = "Cards in Deck " + deckId + " - " + deckCards.size() + " unique cards, " + totalCards + " total";
+                    if (hasCommander) {
+                        title += " ⚜️";
+                    }
+                }
+            } catch (Exception ex) {
+                cardsModel.addRow(new Object[]{"Error", "loading cards", ex.getMessage(), "", "", 0, false});
+            }
+
+            JLabel titleLabel = new JLabel("Cards in Deck " + deckId, SwingConstants.CENTER);
+            titleLabel.setForeground(FG_LIGHT);
+            titleLabel.setFont(BOLD_FONT);
+
+            JButton closeButton = new JButton("Close");
+            styleButton(closeButton, new Color(100, 100, 100));
+            closeButton.addActionListener(evt -> cardsDialog.dispose());
+
+            // Add remove card functionality
+            JButton removeCardButton = new JButton("Remove Selected Card");
+            styleButton(removeCardButton, new Color(200, 0, 0));
+            removeCardButton.addActionListener(evt -> {
+                int selectedRow = cardsTable.getSelectedRow();
+                if (selectedRow >= 0) {
+                    int cardId = (int) cardsModel.getValueAt(selectedRow, 0);
+                    String cardName = (String) cardsModel.getValueAt(selectedRow, 1);
+                    boolean isCommander = (Boolean) cardsModel.getValueAt(selectedRow, 6);
+
+                    if (isCommander) {
+                        JOptionPane.showMessageDialog(cardsDialog,
+                                "Cannot remove commander card '" + cardName + "'.\n" +
+                                        "You must assign a new commander first.",
+                                "Commander Protection",
+                                JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+
+                    int confirm = JOptionPane.showConfirmDialog(cardsDialog,
+                            "Remove card '" + cardName + "' (ID: " + cardId + ") from deck?",
+                            "Confirm Removal",
+                            JOptionPane.YES_NO_OPTION);
+
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        try {
+                            boolean success = controller.removeCardFromDeck(deckId, cardId);
+                            if (success) {
+                                cardsModel.removeRow(selectedRow);
+                                JOptionPane.showMessageDialog(cardsDialog, "Card removed successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+                                // Refresh if no cards left
+                                if (cardsModel.getRowCount() == 1 && cardsModel.getValueAt(0, 0).equals("-")) {
+                                    cardsDialog.dispose();
+                                }
+                            } else {
+                                JOptionPane.showMessageDialog(cardsDialog, "Failed to remove card.", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        } catch (SQLException ex) {
+                            JOptionPane.showMessageDialog(cardsDialog, "Database error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(cardsDialog, "Please select a card to remove.", "No Selection", JOptionPane.WARNING_MESSAGE);
+                }
+            });
+
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.setBackground(BG_DARK);
+            buttonPanel.add(removeCardButton);
+            buttonPanel.add(closeButton);
+
+            mainPanel.add(titleLabel, BorderLayout.NORTH);
+            mainPanel.add(scrollPane, BorderLayout.CENTER);
+            mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+            cardsDialog.add(mainPanel);
+            cardsDialog.setVisible(true);
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid deck ID.", "Input Error", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error loading deck cards: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

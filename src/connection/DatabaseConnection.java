@@ -1,68 +1,71 @@
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
 package connection;
-import java.sql.*;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class DatabaseConnection {
-    // Database configuration constants
-    // FIX: Added 'serverTimezone=UTC' to the URL to resolve the time zone error.
-    private static final String URL = "jdbc:mysql://127.0.0.1:3306/mtg_commander_db?serverTimezone=UTC&useSSL=false";
+    private static final String URL = "jdbc:mysql://127.0.0.1:3306/mtg_commander_db?useSSL=false&allowPublicKeyRetrieval=true";
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "January122006";
-
-    // Static connection instance to be shared across the application
+    private static final String PASSWORD = "password";
     private static Connection sharedConnection = null;
 
-    /**
-     * Initializes the shared database connection upon class loading.
-     */
-    static {
-        try {
-            // 1. Load the MySQL JDBC Driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            System.out.println("JDBC Driver loaded successfully.");
-
-            // 2. Establish the connection
-            // The connection URL now includes the necessary timezone configuration.
-            sharedConnection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-            System.out.println("Database connection established successfully.");
-        } catch (ClassNotFoundException e) {
-            System.err.println("FATAL: MySQL JDBC driver not found. Check your classpath (the -cp argument).");
-        } catch (SQLException e) {
-            System.err.println("FATAL: Database connection failed. Check your MySQL server status, username, and password.");
-            System.err.println("SQL Error: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Provides the single shared connection instance.
-     * @return The active Connection object, or null if connection failed at startup.
-     */
     public static Connection getConnection() {
         return sharedConnection;
     }
 
-    /**
-     * Tests if the shared connection is currently valid.
-     */
     public static boolean testConnection() {
         try {
-            // Check if the connection object exists and is open
             return sharedConnection != null && !sharedConnection.isClosed();
-        } catch (SQLException e) {
+        } catch (SQLException var1) {
             return false;
         }
     }
 
-    /**
-     * Closes the shared database connection (call this before exiting the application).
-     */
     public static void closeConnection() {
         try {
             if (sharedConnection != null && !sharedConnection.isClosed()) {
                 sharedConnection.close();
                 System.out.println("Database connection closed.");
             }
+        } catch (SQLException var1) {
+            System.err.println("Error closing connection: " + var1.getMessage());
+        }
+
+    }
+
+    static {
+        initializeConnection();
+    }
+
+    private static void initializeConnection() {
+        try {
+            // Test if driver is available
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            System.out.println("✓ MySQL JDBC Driver loaded successfully");
+
+            // Test connection
+            sharedConnection = DriverManager.getConnection(
+                    "jdbc:mysql://127.0.0.1:3306/mtg_commander_db?serverTimezone=UTC&useSSL=false",
+                    "root",
+                    "password"
+            );
+            System.out.println("✓ Database connection established successfully");
+
+        } catch (ClassNotFoundException e) {
+            System.err.println("✗ MySQL JDBC Driver not found in classpath");
+            System.err.println("Classpath: " + System.getProperty("java.class.path"));
+            sharedConnection = null;
         } catch (SQLException e) {
-            System.err.println("Error closing connection: " + e.getMessage());
+            System.err.println("✗ Database connection failed: " + e.getMessage());
+            sharedConnection = null;
         }
     }
+
+
 }
