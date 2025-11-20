@@ -62,9 +62,7 @@ public class DashboardGUI extends JFrame {
         // Create and add buttons
         navPanel.add(createNavButton("Card Inventory", e -> launchGUI(new CardGUI(controller))));
         navPanel.add(createNavButton("Player Records", e -> launchGUI(new PlayerGUI(controller))));
-        navPanel.add(createNavButton("Deck Management", e -> {
-            JOptionPane.showMessageDialog(this, "Deck Management coming soon!", "Placeholder", JOptionPane.INFORMATION_MESSAGE);
-        }));
+        navPanel.add(createNavButton("Deck Management", e -> launchGUI(new DeckGUI(controller))));
         navPanel.add(createNavButton("Borrow Requests", e -> launchGUI(new BorrowReqGUI(controller))));
 
         add(navPanel, BorderLayout.CENTER);

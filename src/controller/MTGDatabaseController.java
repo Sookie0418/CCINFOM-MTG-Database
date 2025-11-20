@@ -173,6 +173,21 @@ public class MTGDatabaseController {
         return playerTransactions.deletePlayer(playerId);
     }
 
+    public List<Deck> getAllDecks() throws SQLException {
+        return deckTransactions.getAllDecks();
+    }
+
+    public int createDeck(String deckName, int playerId, String bracketInfo, String description) throws SQLException {
+        return deckTransactions.createDeck(deckName, playerId, bracketInfo, description);
+    }
+
+    public String validateDeck(int deckId) throws SQLException {
+        return deckTransactions.validateDeck(deckId);
+    }
+
+
+
+
     // --- Public Card methods calling BorrowTransactions ---
     public List<BorrowRequest> getAllBorrowRequests() throws SQLException {
         return borrowTransactions.getAllBorrowRequests();
