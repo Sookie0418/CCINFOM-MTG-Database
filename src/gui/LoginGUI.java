@@ -1,6 +1,3 @@
-package gui;
-import controller.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -21,76 +18,55 @@ public class LoginGUI extends JFrame {
     private final JTextField usernameField;
     private final JPasswordField passwordField;
 
-    // Local resource paths (try classpath first, then filesystem fallback)
-    // Images are located under src/gui/images in this repository
-    private static final String BACKGROUND_FILE = "/gui/images/bg.png";
-    // ADDED: New constant for the specific taskbar icon image
-    private static final String TASKBAR_ICON_FILE = "/gui/images/taskbar_icon.png";
-    private static final String LOGO_FILE = "/gui/images/logo.png";
+    // Image files
+    private static final String BACKGROUND_FILE = "bg.png";
+    private static final String TASKBAR_ICON_FILE = "taskbar_icon.png";
+    private static final String LOGO_FILE = "logo.png";
 
-    // --- Colors & Styling ---
+    // Colors
     private static final Color BG_DARK = new Color(10, 10, 15);
     private static final Color ACCENT_RED = new Color(255, 60, 0);
+    private static final Color ACCENT_BLUE = new Color(0, 120, 215);
     private static final Color INPUT_BG = new Color(35, 35, 35);
     private static final Color INPUT_BORDER_INACTIVE = new Color(80, 80, 80);
     private static final Color INPUT_BORDER_ACTIVE = ACCENT_RED;
     private static final Color OVERLAY_COLOR = new Color(0, 0, 0, 180);
 
-    // --- Logo Dimensions ---
+    // Logo size
     private static final int LOGO_WIDTH = 380;
     private static final int LOGO_HEIGHT = 110;
 
-    // Used for dragging the undecorated window
     private int pX, pY;
 
 
     public LoginGUI(MTGDatabaseController controller) {
         this.controller = controller;
-
-        // --- Frame Setup ---
         setTitle("MTG Database Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // --- CUSTOM WINDOW DECORATION ---
-        setUndecorated(true); // Remove native OS border
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Go full screen
+        setUndecorated(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         setLocationRelativeTo(null);
 
-        // --- NEW: SET APPLICATION ICON ---
-        // Try loading from classpath first (works when packaged as jar), then fallback to filesystem
         try {
-            java.net.URL iconUrl = getClass().getResource(TASKBAR_ICON_FILE);
-            Image iconImage = null;
-            if (iconUrl != null) {
-                iconImage = new ImageIcon(iconUrl).getImage();
-            } else {
-                String fsPath = TASKBAR_ICON_FILE.startsWith("/") ? TASKBAR_ICON_FILE.substring(1) : TASKBAR_ICON_FILE;
-                File iconFile = new File(fsPath);
-                if (iconFile.exists()) {
-                    iconImage = new ImageIcon(iconFile.getAbsolutePath()).getImage();
-                }
-            }
-            if (iconImage != null) {
+            File iconFile = new File(TASKBAR_ICON_FILE);
+            if (iconFile.exists()) {
+                Image iconImage = new ImageIcon(iconFile.getAbsolutePath()).getImage();
                 this.setIconImage(iconImage); // Set the taskbar and window icon
             }
         } catch (Exception e) {
             System.err.println("Failed to load application icon: " + e.getMessage());
         }
-        // ---------------------------------
 
-        // 1. Create the Main Content Panel (Custom Panel for Static Drawing)
         JPanel mainPanel = new StaticBackgroundPanel();
         mainPanel.setLayout(new BorderLayout());
 
-        // 2. Add the Custom Drag Bar at the top
         mainPanel.add(createCustomTitleBar(), BorderLayout.NORTH);
 
-        // 3. Create the Login Form Container (to center the form)
         JPanel centerPanel = new JPanel(new GridBagLayout());
         centerPanel.setOpaque(false); // See through to background
 
-        // 4. Create the Login Form Panel (Translucent)
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setOpaque(false);
         formPanel.setBackground(new Color(0, 0, 0, 150));
@@ -100,14 +76,11 @@ public class LoginGUI extends JFrame {
         gbc.insets = new Insets(10, 0, 10, 0);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Components
         usernameField = createThemedTextField(30, "Username");
         passwordField = createThemedPasswordField(30, "Password");
         JButton loginButton = new JButton("LOG IN");
+        JButton registerButton = new JButton("CREATE ACCOUNT");
 
-        // --- Layout Components ---
-
-        // Title/Logo Area
         JLabel logoLabel = createLogoLabel();
 
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
@@ -122,34 +95,29 @@ public class LoginGUI extends JFrame {
 
         gbc.insets = new Insets(15, 0, 15, 0);
 
-        // Username Field
+        // Username
         gbc.gridy = 2;
         formPanel.add(usernameField, gbc);
 
-        // Password Field
+        // Password
         gbc.gridy = 3;
         formPanel.add(passwordField, gbc);
 
-        // Login Button Styling
+        // Login Button
         loginButton.setFont(new Font("Arial", Font.BOLD, 24));
         loginButton.setBackground(ACCENT_RED);
         loginButton.setForeground(Color.WHITE);
         loginButton.setFocusPainted(false);
         loginButton.setBorder(BorderFactory.createEmptyBorder(15, 25, 15, 25));
-
-        // FLAIR: Added button hover/press feedback
         loginButton.addActionListener(new AbstractAction("LOG IN") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Simulate press feedback
                 loginButton.setBackground(ACCENT_RED.darker());
-
-                // Perform actual login after a small delay to show feedback
                 Timer timer = new Timer(100, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent timerEvent) {
                         handleLogin(e);
-                        loginButton.setBackground(ACCENT_RED); // Restore color
+                        loginButton.setBackground(ACCENT_RED);
                         ((Timer)timerEvent.getSource()).stop();
                     }
                 });
@@ -158,53 +126,60 @@ public class LoginGUI extends JFrame {
             }
         });
 
-        // Login Button
+        registerButton.setFont(new Font("Arial", Font.BOLD, 18));
+        registerButton.setBackground(ACCENT_BLUE);
+        registerButton.setForeground(Color.WHITE);
+        registerButton.setFocusPainted(false);
+        registerButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        registerButton.addActionListener(new AbstractAction("CREATE ACCOUNT") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                registerButton.setBackground(ACCENT_BLUE.darker());
+                Timer timer = new Timer(100, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent timerEvent) {
+                        handleRegister();
+                        registerButton.setBackground(ACCENT_BLUE);
+                        ((Timer)timerEvent.getSource()).stop();
+                    }
+                });
+                timer.setRepeats(false);
+                timer.start();
+            }
+        });
+
+        gbc.gridy = 5; gbc.insets = new Insets(10, 0, 0, 0);
+        formPanel.add(registerButton, gbc);
+
         gbc.gridy = 4; gbc.insets = new Insets(40, 0, 5, 0);
         formPanel.add(loginButton, gbc);
 
-        // Final Assembly
         centerPanel.add(formPanel, new GridBagConstraints());
         mainPanel.add(centerPanel, BorderLayout.CENTER);
-
-        // --- Action Listener ---
         getRootPane().setDefaultButton(loginButton);
-
-        // Finalize Frame
         setContentPane(mainPanel);
         setVisible(true);
     }
 
     /**
-     * Creates and loads the logo image label, resizing it to fit.
+     * Creates and loads logo image label and resizes to fit.
      */
     private JLabel createLogoLabel() {
         JLabel label = new JLabel();
         try {
-            java.net.URL logoUrl = getClass().getResource(LOGO_FILE);
-            if (logoUrl != null) {
-                ImageIcon originalIcon = new ImageIcon(logoUrl);
+            File imageFile = new File(LOGO_FILE);
+            if (imageFile.exists()) {
+                ImageIcon originalIcon = new ImageIcon(imageFile.getAbsolutePath());
                 Image scaledImage = originalIcon.getImage().getScaledInstance(LOGO_WIDTH, LOGO_HEIGHT, Image.SCALE_SMOOTH);
                 label.setIcon(new ImageIcon(scaledImage));
                 label.setHorizontalAlignment(SwingConstants.CENTER);
             } else {
-                // Try filesystem fallback
-                String fsPath = LOGO_FILE.startsWith("/") ? LOGO_FILE.substring(1) : LOGO_FILE;
-                File imageFile = new File(fsPath);
-                if (imageFile.exists()) {
-                    ImageIcon originalIcon = new ImageIcon(imageFile.getAbsolutePath());
-                    Image scaledImage = originalIcon.getImage().getScaledInstance(LOGO_WIDTH, LOGO_HEIGHT, Image.SCALE_SMOOTH);
-                    label.setIcon(new ImageIcon(scaledImage));
-                    label.setHorizontalAlignment(SwingConstants.CENTER);
-                } else {
-                    // Fallback to text if the image is not found
-                    label.setText("MTG COMMANDER DB");
-                    label.setFont(new Font("Arial", Font.BOLD, 36));
-                    label.setForeground(ACCENT_RED);
-                    label.setHorizontalAlignment(SwingConstants.CENTER);
-                }
+                label.setText("MTG COMMANDER DB");
+                label.setFont(new Font("Arial", Font.BOLD, 36));
+                label.setForeground(ACCENT_RED);
+                label.setHorizontalAlignment(SwingConstants.CENTER);
             }
         } catch (Exception e) {
-            // Fallback in case of error
             label.setText("MTG COMMANDER DB");
             label.setFont(new Font("Arial", Font.BOLD, 36));
             label.setForeground(ACCENT_RED);
@@ -214,27 +189,25 @@ public class LoginGUI extends JFrame {
     }
 
     /**
-     * Creates the custom title bar with drag capability and window controls.
+     * Creates custom title bar with drag capability and window controls.
      */
     private JPanel createCustomTitleBar() {
         JPanel titleBar = new JPanel(new BorderLayout());
-        titleBar.setBackground(new Color(20, 20, 25)); // Slightly lighter than background
+        titleBar.setBackground(new Color(20, 20, 25));
         titleBar.setPreferredSize(new Dimension(this.getWidth(), 30));
 
-        // Window Title Label
         JLabel titleLabel = new JLabel("  MTG Database Login");
         titleLabel.setForeground(new Color(180, 180, 180));
         titleLabel.setFont(new Font("Arial", Font.BOLD, 12));
         titleBar.add(titleLabel, BorderLayout.WEST);
 
-        // Window Controls (Minimize and Close)
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         controls.setOpaque(false);
 
         JButton minimizeButton = createControlButton("_", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setExtendedState(JFrame.ICONIFIED);
+                setState(JFrame.ICONIFIED);
             }
         });
 
@@ -249,7 +222,6 @@ public class LoginGUI extends JFrame {
         controls.add(closeButton);
         titleBar.add(controls, BorderLayout.EAST);
 
-        // Enable Dragging
         titleBar.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
                 pX = me.getX();
@@ -266,7 +238,7 @@ public class LoginGUI extends JFrame {
     }
 
     /**
-     * Helper to create themed minimize/close buttons.
+     * Helper to create themed control buttons.
      */
     private JButton createControlButton(String text, Action action) {
         JButton button = new JButton(text);
@@ -279,7 +251,6 @@ public class LoginGUI extends JFrame {
 
         button.addActionListener(action);
 
-        // Hover effect for flair
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -307,17 +278,10 @@ public class LoginGUI extends JFrame {
         private Image staticBackgroundImage;
 
         public StaticBackgroundPanel() {
-            // Attempt to load the local background image (Fallback)
             try {
-                java.net.URL bgUrl = getClass().getResource(BACKGROUND_FILE);
-                if (bgUrl != null) {
-                    staticBackgroundImage = new ImageIcon(bgUrl).getImage();
-                } else {
-                    String fsPath = BACKGROUND_FILE.startsWith("/") ? BACKGROUND_FILE.substring(1) : BACKGROUND_FILE;
-                    File imageFile = new File(fsPath);
-                    if (imageFile.exists()) {
-                        staticBackgroundImage = new ImageIcon(imageFile.getAbsolutePath()).getImage();
-                    }
+                File imageFile = new File(BACKGROUND_FILE);
+                if (imageFile.exists()) {
+                    staticBackgroundImage = new ImageIcon(imageFile.getAbsolutePath()).getImage();
                 }
             } catch (Exception e) {
                 System.err.println("Error loading static background image: " + e.getMessage());
@@ -331,7 +295,6 @@ public class LoginGUI extends JFrame {
             int w = getWidth();
             int h = getHeight();
 
-            // 1. Draw Static Image (or solid color)
             if (staticBackgroundImage != null) {
                 g.drawImage(staticBackgroundImage, 0, 0, w, h, this);
             } else {
@@ -339,7 +302,6 @@ public class LoginGUI extends JFrame {
                 g.fillRect(0, 0, w, h);
             }
 
-            // 2. Draw the Grey Overlay (Vignette Effect)
             g.setColor(OVERLAY_COLOR);
             g.fillRect(0, 0, w, h);
         }
@@ -356,7 +318,6 @@ public class LoginGUI extends JFrame {
         field.setCaretColor(Color.WHITE);
         field.setFont(new Font("Arial", Font.PLAIN, 18));
 
-        // Initial border (inactive)
         field.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(INPUT_BORDER_INACTIVE, 1),
                 BorderFactory.createEmptyBorder(10, 15, 10, 15)
@@ -366,14 +327,16 @@ public class LoginGUI extends JFrame {
         field.setText(placeholderText);
         field.setHorizontalAlignment(SwingConstants.LEFT);
 
-        // FLAIR: Add Focus Listener for themed border highlight
         field.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 field.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(INPUT_BORDER_ACTIVE, 2), // Thicker, accent color border
+                        BorderFactory.createLineBorder(INPUT_BORDER_ACTIVE, 2),
                         BorderFactory.createEmptyBorder(9, 14, 9, 14)
                 ));
+                if (field.getText().equals(placeholderText)) {
+                    field.setText("");
+                }
             }
 
             @Override
@@ -382,23 +345,23 @@ public class LoginGUI extends JFrame {
                         BorderFactory.createLineBorder(INPUT_BORDER_INACTIVE, 1),
                         BorderFactory.createEmptyBorder(10, 15, 10, 15)
                 ));
+                if (field.getText().isEmpty()) {
+                    field.setText(placeholderText);
+                }
             }
         });
 
         return field;
     }
 
-    /**
-     * Creates a themed JPasswordField for dark backgrounds, with themed focus.
-     */
     private JPasswordField createThemedPasswordField(int columns, String placeholderText) {
         JPasswordField field = new JPasswordField(columns);
         field.setBackground(INPUT_BG);
         field.setForeground(Color.WHITE);
         field.setCaretColor(Color.WHITE);
         field.setFont(new Font("Arial", Font.PLAIN, 18));
+        field.setEchoChar((char) 0);
 
-        // Initial border (inactive)
         field.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(INPUT_BORDER_INACTIVE, 1),
                 BorderFactory.createEmptyBorder(10, 15, 10, 15)
@@ -408,14 +371,17 @@ public class LoginGUI extends JFrame {
         field.setText(placeholderText);
         field.setHorizontalAlignment(SwingConstants.LEFT);
 
-        // FLAIR: Add Focus Listener for themed border highlight
         field.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 field.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(INPUT_BORDER_ACTIVE, 2), // Thicker, accent color border
+                        BorderFactory.createLineBorder(INPUT_BORDER_ACTIVE, 2),
                         BorderFactory.createEmptyBorder(9, 14, 9, 14)
                 ));
+                if (String.valueOf(field.getPassword()).equals(placeholderText)) {
+                    field.setText("");
+                    field.setEchoChar('•'); // Hide password when typing
+                }
             }
 
             @Override
@@ -424,6 +390,10 @@ public class LoginGUI extends JFrame {
                         BorderFactory.createLineBorder(INPUT_BORDER_INACTIVE, 1),
                         BorderFactory.createEmptyBorder(10, 15, 10, 15)
                 ));
+                if (field.getPassword().length == 0) {
+                    field.setText(placeholderText);
+                    field.setEchoChar((char) 0); // Show placeholder text
+                }
             }
         });
 
@@ -431,32 +401,209 @@ public class LoginGUI extends JFrame {
     }
 
 
-    /**
-     * Handles the login button click, validates credentials via the controller,
-     * and launches the main application upon success.
-     */
     private void handleLogin(ActionEvent e) {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
 
         try {
-            // Call the validation method in the Controller
             if (controller.validateUser(username, password)) {
-                // Login successful
                 JOptionPane.showMessageDialog(this, "Login Successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
-                // Close the login window
                 this.dispose();
 
-                // Launch the Dashboard GUI
                 SwingUtilities.invokeLater(() -> new DashboardGUI(controller));
             } else {
-                // Login failed
                 JOptionPane.showMessageDialog(this, "Invalid Username or Password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
-                passwordField.setText(""); // Clear password field
+                passwordField.setText("");
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "An unexpected error occurred during login: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void handleRegister() {
+        // Create registration dialog
+        JDialog registerDialog = new JDialog(this, "Create New Account", true);
+        registerDialog.setUndecorated(true);
+        registerDialog.setLayout(new BorderLayout());
+        registerDialog.setBackground(BG_DARK);
+        registerDialog.setSize(500, 600);
+        registerDialog.setLocationRelativeTo(this);
+
+        // Main panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(BG_DARK);
+        mainPanel.setBorder(BorderFactory.createLineBorder(ACCENT_BLUE, 2));
+
+        // Title bar
+        JPanel titleBar = createRegisterTitleBar(registerDialog);
+        mainPanel.add(titleBar, BorderLayout.NORTH);
+
+        // Form panel
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBackground(BG_DARK);
+        formPanel.setBorder(BorderFactory.createEmptyBorder(40, 50, 40, 50));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 0, 10, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0;
+
+        // Title
+        JLabel titleLabel = new JLabel("CREATE ACCOUNT", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(ACCENT_BLUE);
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 30, 0);
+        formPanel.add(titleLabel, gbc);
+
+        gbc.insets = new Insets(10, 0, 10, 0);
+
+        // Username field
+        JTextField regUsernameField = createThemedTextField(20, "Username");
+        gbc.gridy = 1;
+        formPanel.add(regUsernameField, gbc);
+
+        // Password field
+        JPasswordField regPasswordField = createThemedPasswordField(20, "Password");
+        gbc.gridy = 2;
+        formPanel.add(regPasswordField, gbc);
+
+        // Confirm Password field
+        JPasswordField regConfirmPasswordField = createThemedPasswordField(20, "Confirm Password");
+        gbc.gridy = 3;
+        formPanel.add(regConfirmPasswordField, gbc);
+
+        // Register button
+        JButton confirmRegisterButton = new JButton("CREATE ACCOUNT");
+        confirmRegisterButton.setFont(new Font("Arial", Font.BOLD, 18));
+        confirmRegisterButton.setBackground(ACCENT_BLUE);
+        confirmRegisterButton.setForeground(Color.WHITE);
+        confirmRegisterButton.setFocusPainted(false);
+        confirmRegisterButton.setBorder(BorderFactory.createEmptyBorder(12, 20, 12, 20));
+
+        gbc.gridy = 4;
+        gbc.insets = new Insets(30, 0, 10, 0);
+        formPanel.add(confirmRegisterButton, gbc);
+
+        // Cancel button
+        JButton cancelButton = new JButton("CANCEL");
+        cancelButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        cancelButton.setBackground(INPUT_BG);
+        cancelButton.setForeground(Color.WHITE);
+        cancelButton.setFocusPainted(false);
+        cancelButton.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
+
+        gbc.gridy = 5;
+        gbc.insets = new Insets(10, 0, 0, 0);
+        formPanel.add(cancelButton, gbc);
+
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        registerDialog.add(mainPanel);
+
+        // Add action listeners
+        confirmRegisterButton.addActionListener(e -> {
+            String username = regUsernameField.getText().trim();
+            String password = new String(regPasswordField.getPassword());
+            String confirmPassword = new String(regConfirmPasswordField.getPassword());
+
+            // Validate inputs
+            if (username.equals("Username") || username.isEmpty()) {
+                JOptionPane.showMessageDialog(registerDialog, "Please enter a username.", "Input Required", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (password.equals("Password") || password.isEmpty()) {
+                JOptionPane.showMessageDialog(registerDialog, "Please enter a password.", "Input Required", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (confirmPassword.equals("Confirm Password") || confirmPassword.isEmpty()) {
+                JOptionPane.showMessageDialog(registerDialog, "Please confirm your password.", "Input Required", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (!password.equals(confirmPassword)) {
+                JOptionPane.showMessageDialog(registerDialog, "Passwords do not match.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (password.length() < 8) {
+                JOptionPane.showMessageDialog(registerDialog, "Password must be at least 8 characters long.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (username.contains(" ")) {
+                JOptionPane.showMessageDialog(registerDialog, "Username cannot contain spaces.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Attempt registration
+            try {
+                // Use RegisterUser class for registration
+                boolean success = RegisterUser.promptAndRegister(null, new java.util.Scanner(username + "\n" + password + "\n" + confirmPassword + "\n"));
+
+                if (success) {
+                    JOptionPane.showMessageDialog(registerDialog, "Account created successfully!\nYou can now login with your credentials.", "Registration Successful", JOptionPane.INFORMATION_MESSAGE);
+                    registerDialog.dispose();
+
+                    // Clear fields for next use
+                    usernameField.setText("");
+                    passwordField.setText("");
+                    passwordField.setEchoChar((char) 0);
+                    passwordField.setText("Password");
+                } else {
+                    JOptionPane.showMessageDialog(registerDialog, "Registration failed. Username may already exist.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(registerDialog, "An error occurred during registration: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        cancelButton.addActionListener(e -> registerDialog.dispose());
+
+        registerDialog.setVisible(true);
+    }
+
+    /**
+     * Creates title bar for registration dialog
+     */
+    private JPanel createRegisterTitleBar(JDialog dialog) {
+        JPanel titleBar = new JPanel(new BorderLayout());
+        titleBar.setBackground(new Color(20, 20, 25));
+        titleBar.setPreferredSize(new Dimension(500, 30));
+
+        JLabel titleLabel = new JLabel("  Create New Account");
+        titleLabel.setForeground(new Color(180, 180, 180));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 12));
+        titleBar.add(titleLabel, BorderLayout.WEST);
+
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        controls.setOpaque(false);
+
+        JButton closeButton = createControlButton("X", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+
+        controls.add(closeButton);
+        titleBar.add(controls, BorderLayout.EAST);
+
+        // Add drag functionality
+        titleBar.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent me) {
+                pX = me.getX();
+                pY = me.getY();
+            }
+        });
+        titleBar.addMouseMotionListener(new MouseAdapter() {
+            public void mouseDragged(MouseEvent me) {
+                dialog.setLocation(dialog.getLocation().x + me.getX() - pX, dialog.getLocation().y + me.getY() - pY);
+            }
+        });
+
+        return titleBar;
     }
 }
