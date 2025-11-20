@@ -4,8 +4,8 @@ import entity.Player;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader; // Needed for table header styling
-import javax.swing.border.TitledBorder; // Needed for form border styling
+import javax.swing.table.JTableHeader;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -61,6 +61,7 @@ public class PlayerGUI extends JFrame {
         // Apply dark background to the frame
         getContentPane().setBackground(BG_DARK);
 
+        setJMenuBar(createMenuBar());
         // 2. Initialize Components
         initializeForm();
         initializeTable();
@@ -105,6 +106,65 @@ public class PlayerGUI extends JFrame {
 
         // Initial render of data
         refreshTable();
+    }
+
+
+    /**
+     * Creates a themed Menu Bar for navigation.
+     */
+    private JMenuBar createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.setBackground(BG_DARK.brighter());
+        menuBar.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 60)));
+
+        JMenu navMenu = new JMenu("Navigate");
+        navMenu.setForeground(FG_LIGHT);
+        navMenu.setFont(BOLD_FONT);
+
+        JMenu appMenu = new JMenu("App");
+        appMenu.setForeground(FG_LIGHT);
+        appMenu.setFont(BOLD_FONT);
+
+        // Dashboard
+        JMenuItem dashboardItem = new JMenuItem("Dashboard");
+        dashboardItem.addActionListener(e -> launchGUI(new DashboardGUI(controller)));
+        dashboardItem.setBackground(INPUT_BG);
+        dashboardItem.setForeground(FG_LIGHT);
+
+        // Card Management
+        JMenuItem cardItem = new JMenuItem("Card Management");
+        cardItem.addActionListener(e -> launchGUI(new CardGUI(controller)));
+        cardItem.setBackground(INPUT_BG);
+        cardItem.setForeground(FG_LIGHT);
+
+        // Deck Management
+        JMenuItem deckItem = new JMenuItem("Deck Management");
+        deckItem.addActionListener(e -> launchGUI(new DeckGUI(controller)));
+        deckItem.setBackground(INPUT_BG);
+        deckItem.setForeground(FG_LIGHT);
+
+        // Borrow Management
+        JMenuItem borrowItem = new JMenuItem("Borrow Management");
+        borrowItem.addActionListener(e -> launchGUI(new BorrowReqGUI(controller)));
+        borrowItem.setBackground(INPUT_BG);
+        borrowItem.setForeground(FG_LIGHT);
+
+        // Exit
+        JMenuItem exitItem = new JMenuItem("Exit");
+        exitItem.addActionListener(e -> System.exit(0));
+        exitItem.setBackground(INPUT_BG);
+        exitItem.setForeground(Color.RED);
+
+        navMenu.add(dashboardItem);
+        navMenu.add(cardItem);
+        navMenu.add(deckItem);
+        navMenu.add(borrowItem);
+        appMenu.add(exitItem);
+
+        menuBar.add(appMenu);
+        menuBar.add(navMenu);
+
+        return menuBar;
     }
 
     /**
