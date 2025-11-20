@@ -473,9 +473,8 @@ public class DeckGUI extends JFrame {
                         deck.getDeckName(),
                         deck.getPlayerId(),
                         deck.getCommanderCardId(),
-                        deck.getBracketInfo(),
+                        deck.getBracketNum(),
                         deck.getManaBase(),
-                        deck.getSaltScore(),
                         deck.getValidity(),
                         deck.getDescription()
                 };

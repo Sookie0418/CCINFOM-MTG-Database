@@ -99,4 +99,34 @@ public class DeckTransactions {
         if (isValid) return "Deck is VALID.";
         return "Deck is INVALID. Card Count: " + totalCards + " (Required: 100). Banned Cards: " + bannedCount;
     }
+    /**
+     * Retrieves all decks from the database.
+     */
+    public List<Deck> getAllDecks() {
+        List<Deck> decks = new ArrayList<>();
+        Connection conn = dbConnection.getConnection();
+        String sql = "SELECT deck_id, deck_name, player_id, bracket_info, description, validity FROM deck";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                int deckId = rs.getInt("deck_id");
+                String deckName = rs.getString("deck_name");
+                int playerId = rs.getInt("player_id");
+                int bracketNum = 0;
+                String bracketInfo = rs.getString("bracket_info");
+                String description = rs.getString("description");
+                boolean validity = "Valid".equalsIgnoreCase(rs.getString("validity"));
+                try {
+                    Deck deck = new Deck(deckId, deckName, playerId, bracketNum, bracketInfo, description);
+                    deck.validateDeck();
+                    decks.add(deck);
+                } catch (Exception e) {
+                    System.err.println("Error creating Deck object: " + e.getMessage());
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching decks: " + e.getMessage());
+        }
+        return decks;
+    }
 }

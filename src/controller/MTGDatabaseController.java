@@ -139,7 +139,7 @@ public class MTGDatabaseController {
     }
 
     // --- Public Card methods calling CardTransactions ---
-    public List<Record> getAllCards() throws SQLException {
+    public List<entity.Record> getAllCards() throws SQLException {
         return cardTransactions.getAllCards();
     }
 

@@ -1,5 +1,4 @@
 package entity;
-
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -82,7 +81,7 @@ public class Deck {
         return bracketNum;
     }
 
-    public boolean getDeckValidity() {
+    public boolean getValidity() {
         return deckValidity;
     }
 
