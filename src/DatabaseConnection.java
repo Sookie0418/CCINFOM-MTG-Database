@@ -4,8 +4,8 @@ public class DatabaseConnection {
     // Database configuration constants
     // FIX: Added 'serverTimezone=UTC' to the URL to resolve the time zone error.
     private static final String URL = "jdbc:mysql://127.0.0.1:3306/mtg_commander_db?serverTimezone=UTC&useSSL=false";
-    private static final String USERNAME = "Justin";
-    private static final String PASSWORD = "L1ghtning";
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "password";
 
     // Static connection instance to be shared across the application
     private static Connection sharedConnection = null;
