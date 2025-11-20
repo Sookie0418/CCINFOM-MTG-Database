@@ -66,7 +66,7 @@ public class Deck {
         return new ArrayList<>(deckCards); // Return copy to prevent external modification
     }
 
-    public int getDeckID() {
+    public int getDeckId() {
         return deckID;
     }
 
@@ -74,11 +74,11 @@ public class Deck {
         return deckName;
     }
 
-    public int getOwnerID() {
+    public int getPlayerId() {
         return ownerID;
     }
 
-    public Card getCommanderCard() {
+    public Card getCommanderCardId() {
         return commanderCard;
     }
 

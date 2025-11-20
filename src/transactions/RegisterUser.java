@@ -1,3 +1,5 @@
+package transactions;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,7 +12,7 @@ import java.util.Scanner;
  * MTGDatabaseDriver.
  * NOTE: Does not contain a main method.
  */
-public class RegisterPlayer {
+public class RegisterUser {
 
     /**
      * Guides the user through the input process to register a new player.
