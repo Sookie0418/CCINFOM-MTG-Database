@@ -14,7 +14,6 @@ import java.util.List;
  */
 public class PlayerGUI extends JFrame {
 
-    // --- Colors & Fonts (Synchronized with CardGUI) ---
     private static final Color BG_DARK = new Color(30, 30, 30);
     private static final Color FG_LIGHT = new Color(240, 240, 240);
     private static final Color ACCENT_RED = new Color(255, 60, 0);
@@ -24,44 +23,38 @@ public class PlayerGUI extends JFrame {
     private static final Color BUTTON_BLUE = new Color(50, 150, 255); // Update Button Color
     private static final String TASKBAR_ICON_FILE = "taskbar_icon.png";
 
-    // Reference to the controller
     private MTGDatabaseController controller;
 
-    // --- UI Components ---
     private JTable dataTable;
     private DefaultTableModel tableModel;
 
-    // Input Fields
+    // Input
     private JTextField firstNameField;
     private JTextField lastNameField;
     private JTextField cityAddressField;
     private JTextField ageField;
 
+    // Button
     private JButton addButton;
     private JButton updateButton;
     private JButton deleteButton;
     private JLabel statusLabel;
 
-    // Tracks the ID of the player currently being edited
     private int editingPlayerId = -1;
 
     public PlayerGUI(MTGDatabaseController controller) {
         this.controller = controller;
 
-        // 1. Frame Setup
         setTitle("MTG Commander Database System (Player Management)");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(800, 600);
         setLayout(new BorderLayout(15, 15));
 
-        // Apply dark background to the frame
         getContentPane().setBackground(BG_DARK);
 
-        // 2. Initialize Components
         initializeForm();
         initializeTable();
 
-        // 3. Status Bar (Themed)
         statusLabel = new JLabel("Application Ready.");
         statusLabel.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         statusLabel.setBackground(ACCENT_RED);
@@ -78,12 +71,10 @@ public class PlayerGUI extends JFrame {
             System.err.println("Failed to load application icon: " + e.getMessage());
         }
 
-        // 4. Layout Assembly
         JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
         contentPanel.setBackground(BG_DARK);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
 
-        // Add Title
         JLabel mainTitle = new JLabel("PLAYER RECORD MANAGER", SwingConstants.CENTER);
         mainTitle.setFont(TITLE_FONT);
         mainTitle.setForeground(ACCENT_RED);
@@ -95,17 +86,11 @@ public class PlayerGUI extends JFrame {
         add(contentPanel, BorderLayout.CENTER);
         add(statusLabel, BorderLayout.SOUTH);
 
-        // Set initial visibility and center the window
         setLocationRelativeTo(null);
         setVisible(true);
-
-        // Initial render of data
         refreshTable();
     }
 
-    /**
-     * Creates a themed JTextField for dark backgrounds.
-     */
     private JTextField createThemedField(int columns) {
         JTextField field = new JTextField(columns);
         field.setBackground(INPUT_BG);
@@ -120,7 +105,7 @@ public class PlayerGUI extends JFrame {
     }
 
     /**
-     * Helper method to style buttons uniformly.
+     * Helper method to style buttons
      */
     private void styleButton(JButton button, Color bgColor) {
         button.setFont(BOLD_FONT.deriveFont(14f));
@@ -131,9 +116,6 @@ public class PlayerGUI extends JFrame {
     }
 
 
-    /**
-     * Creates and configures the JTable component with Player columns.
-     */
     private void initializeTable() {
         String[] columnNames = {"ID", "First Name", "Last Name", "City", "Age"};
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -144,7 +126,6 @@ public class PlayerGUI extends JFrame {
         };
         dataTable = new JTable(tableModel);
 
-        // --- Table Styling ---
         dataTable.setBackground(BG_DARK.brighter());
         dataTable.setForeground(FG_LIGHT);
         dataTable.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -152,7 +133,6 @@ public class PlayerGUI extends JFrame {
         dataTable.setSelectionForeground(Color.WHITE);
         dataTable.setRowHeight(25);
 
-        // Header Styling
         JTableHeader header = dataTable.getTableHeader();
         header.setBackground(new Color(60, 60, 60));
         header.setForeground(FG_LIGHT);
@@ -169,15 +149,11 @@ public class PlayerGUI extends JFrame {
         });
     }
 
-    /**
-     * Creates the form panel with input fields and action buttons.
-     */
     private JPanel createFormPanel() {
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new GridBagLayout());
         formPanel.setBackground(BG_DARK.brighter());
 
-        // Apply Themed TitledBorder
         formPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(ACCENT_RED, 2),
                 "Player Details (Create / Edit)",
@@ -195,7 +171,6 @@ public class PlayerGUI extends JFrame {
         JPanel inputGrid = new JPanel(new GridBagLayout());
         inputGrid.setOpaque(false);
 
-        // --- Input Fields Layout ---
         int y = 0;
 
         // First Name
@@ -214,12 +189,12 @@ public class PlayerGUI extends JFrame {
         gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0; JLabel ageLabel = new JLabel("Age:"); ageLabel.setForeground(FG_LIGHT); inputGrid.add(ageLabel, gbc);
         gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0; inputGrid.add(ageField, gbc);
 
-        // --- Button Panel ---
+
         JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 10, 10));
         buttonPanel.setOpaque(false);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
-        // Styled Buttons
+
         styleButton(addButton, ACCENT_RED.darker());
         styleButton(updateButton, BUTTON_BLUE);
         styleButton(deleteButton, Color.RED);
@@ -230,31 +205,27 @@ public class PlayerGUI extends JFrame {
                 clearForm();
             }
         });
-        styleButton(clearButton, new Color(90, 90, 90)); // Grey for Clear
+        styleButton(clearButton, new Color(90, 90, 90));
 
         buttonPanel.add(addButton);
         buttonPanel.add(updateButton);
         buttonPanel.add(deleteButton);
         buttonPanel.add(clearButton);
 
-        // --- Final Assembly of Form Panel ---
         GridBagConstraints gbcForm = new GridBagConstraints();
         gbcForm.insets = new Insets(10, 10, 10, 10);
         gbcForm.fill = GridBagConstraints.HORIZONTAL;
 
-        // Add input grid
         gbcForm.gridx = 0;
         gbcForm.gridy = 0;
         gbcForm.weightx = 1.0;
         gbcForm.weighty = 0;
         formPanel.add(inputGrid, gbcForm);
 
-        // Add button panel
         gbcForm.gridy = 1;
         gbcForm.weighty = 0;
         formPanel.add(buttonPanel, gbcForm);
 
-        // Filler component to push elements to the bottom
         gbcForm.gridy = 2;
         gbcForm.weighty = 1.0;
         formPanel.add(new JLabel(""), gbcForm);
@@ -267,7 +238,6 @@ public class PlayerGUI extends JFrame {
      * Initializes all input fields.
      */
     private void initializeForm() {
-        // Use the themed field creator
         firstNameField = createThemedField(15);
         lastNameField = createThemedField(15);
         cityAddressField = createThemedField(15);
@@ -334,14 +304,11 @@ public class PlayerGUI extends JFrame {
      * Retrieves the data from the controller and updates the JTable model.
      */
     private void refreshTable() {
-        // Clear all existing rows
         tableModel.setRowCount(0);
 
         try {
-            // Fetch data from the SQL-backed controller method
             List<Player> players = controller.getAllPlayers();
 
-            // Add rows from the fetched data list
             for (Player player : players) {
                 Object[] rowData = {
                         player.getPlayerId(),
@@ -353,7 +320,6 @@ public class PlayerGUI extends JFrame {
                 tableModel.addRow(rowData);
             }
 
-            // Update the status bar
             statusLabel.setText("Data fetched successfully. Total players: " + players.size());
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Failed to load players from database: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
@@ -361,7 +327,6 @@ public class PlayerGUI extends JFrame {
         }
     }
 
-    // --- Event Handlers (CRUD Logic calling Controller) ---
 
     private void handleAdd(ActionEvent e) {
         String firstName = firstNameField.getText().trim();
@@ -383,7 +348,7 @@ public class PlayerGUI extends JFrame {
         }
 
         try {
-            Player newPlayer = new Player(0, firstName, lastName, cityAddress, age); // ID 0 for new record
+            Player newPlayer = new Player(0, firstName, lastName, cityAddress, age);
             int newId = controller.addPlayer(newPlayer);
 
             statusLabel.setText("Player '" + firstName + " " + lastName + "' added successfully (ID: " + newId + ").");

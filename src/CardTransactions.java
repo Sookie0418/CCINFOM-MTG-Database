@@ -3,21 +3,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles all database transactions (CRUD) for the Card entity using JDBC and MySQL.
+ * Handles all database transactions for the Card.
  */
 public class CardTransactions {
 
     /**
-     * Retrieves all cards from the database.
+     * Retrieves all cards from database.
      */
     public List<Record> getAllCards() throws SQLException {
         String sql = "SELECT card_id, card_name, card_mana_cost, card_type, card_subtype, " +
                 "card_power, card_toughness, card_text, card_edition, card_status FROM card ORDER BY card_name;";
         List<Record> cards = new ArrayList<>();
 
-        Connection conn = DatabaseConnection.getConnection(); // Get the shared connection
+        Connection conn = DatabaseConnection.getConnection();
 
-        // FIX: Removed conn from try block to prevent premature closing
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
@@ -53,9 +52,8 @@ public class CardTransactions {
                 "card_power, card_toughness, card_text, card_edition, card_status) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        Connection conn = DatabaseConnection.getConnection(); // Get the shared connection
+        Connection conn = DatabaseConnection.getConnection();
 
-        // FIX: Removed conn from try block to prevent premature closing
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             if (conn == null) {
@@ -70,7 +68,7 @@ public class CardTransactions {
             pstmt.setString(6, toughness);
             pstmt.setString(7, text);
             pstmt.setString(8, edition);
-            pstmt.setString(9, status); // ENUM field
+            pstmt.setString(9, status);
 
             pstmt.executeUpdate();
         }
@@ -86,9 +84,8 @@ public class CardTransactions {
                 "card_power = ?, card_toughness = ?, card_text = ?, card_edition = ?, card_status = ? " +
                 "WHERE card_id = ?";
 
-        Connection conn = DatabaseConnection.getConnection(); // Get the shared connection
+        Connection conn = DatabaseConnection.getConnection();
 
-        // FIX: Removed conn from try block to prevent premature closing
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             if (conn == null) {
@@ -103,7 +100,7 @@ public class CardTransactions {
             pstmt.setString(6, toughness);
             pstmt.setString(7, text);
             pstmt.setString(8, edition);
-            pstmt.setString(9, status); // ENUM field
+            pstmt.setString(9, status);
             pstmt.setInt(10, id);
 
             pstmt.executeUpdate();
@@ -116,9 +113,8 @@ public class CardTransactions {
     public void deleteCard(int id) throws SQLException {
         String sql = "DELETE FROM card WHERE card_id = ?";
 
-        Connection conn = DatabaseConnection.getConnection(); // Get the shared connection
+        Connection conn = DatabaseConnection.getConnection();
 
-        // FIX: Removed conn from try block to prevent premature closing
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             if (conn == null) {

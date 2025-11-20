@@ -8,9 +8,8 @@ public class Record {
     private final String toughness;
     private final String text;
     private final String edition;
-    private final String status; // Corresponds to ENUM('Legal', 'Banned', 'Game Changer')
+    private final String status;
 
-    // Full Constructor matching 'card' table columns
     public Record(int id, String name, String manaCost, String type, String subtype,
                   String power, String toughness, String text, String edition, String status) {
         this.id = id;
@@ -25,7 +24,6 @@ public class Record {
         this.status = status;
     }
 
-    // --- Getters ---
     public int getId() { return id; }
     public String getName() { return name; }
     public String getManaCost() { return manaCost; }

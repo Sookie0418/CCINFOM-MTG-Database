@@ -14,7 +14,6 @@ public class Deck {
 
     private Connection connection = null;
 
-    // Constructor
     public Deck(int deckID, String deckName, int ownerID, int bracketNum,
                 String manaBase, String description) throws SQLException, ClassNotFoundException {
         this.deckID = deckID;
@@ -25,7 +24,6 @@ public class Deck {
         this.description = description;
         this.deckCards = new ArrayList<>();
 
-        // Initialize database connection
         Class.forName("com.mysql.cj.jdbc.Driver");
         connection = DriverManager.getConnection(
                 "jdbc:mysql://127.0.0.1:3306/mtg_commander_db",
@@ -33,7 +31,6 @@ public class Deck {
                 "password");
     }
 
-    // Load deck cards from database using CardFactory
     public void loadDeckCards() throws SQLException {
         ResultSet rs = null;
         Card card = CardFactory.createCardFromResultSet(rs);
@@ -50,7 +47,6 @@ public class Deck {
             while (rs.next()) {
                 card = CardFactory.createCardFromResultSet(rs);
 
-                // Set commander if this card is the commander
                 if (rs.getBoolean("is_commander")) {
                     this.commanderCard = card;
                 }
@@ -60,9 +56,8 @@ public class Deck {
         }
     }
 
-    // Getters
     public ArrayList<Card> getDeckCards() {
-        return new ArrayList<>(deckCards); // Return copy to prevent external modification
+        return new ArrayList<>(deckCards);
     }
 
     public int getDeckID() {
@@ -97,19 +92,16 @@ public class Deck {
         return description;
     }
 
-    // Setters
     public void setBracketNum(int bracketNum) {
         this.bracketNum = bracketNum;
     }
 
     public void setCommanderCard(Card selectedCard) throws SQLException {
-        // Check if the card is a creature and legendary
         if (selectedCard instanceof Creature &&
                 selectedCard.getCardType().contains("Legendary")) {
 
             this.commanderCard = selectedCard;
 
-            // Update database to set this card as commander
             String updateSql = "UPDATE deck_cards SET is_commander = CASE WHEN card_id = ? THEN TRUE ELSE FALSE END WHERE deck_id = ?";
             try (PreparedStatement stmt = connection.prepareStatement(updateSql)) {
                 stmt.setInt(1, selectedCard.getCardId());
@@ -123,7 +115,6 @@ public class Deck {
         }
     }
 
-    // Add card to deck
     public boolean addCardToDeck(Card card, int quantity, boolean isGameChanger) throws SQLException {
         String sql = "INSERT INTO deck_cards (deck_id, card_id, card_name, quantity, is_commander, is_game_changer, card_status) " +
                 "VALUES (?, ?, ?, ?, ?, ?, 'In Deck') " +
@@ -140,7 +131,6 @@ public class Deck {
 
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected > 0) {
-                // Add the card to our local list (avoiding duplicates)
                 boolean cardExists = false;
                 for (Card existingCard : deckCards) {
                     if (existingCard.getCardId() == card.getCardId()) {
@@ -157,7 +147,6 @@ public class Deck {
         return false;
     }
 
-    // Remove card from deck
     public boolean removeCardFromDeck(int cardId) throws SQLException {
         String sql = "DELETE FROM deck_cards WHERE deck_id = ? AND card_id = ?";
 
@@ -167,7 +156,6 @@ public class Deck {
 
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected > 0) {
-                // Remove from local list
                 deckCards.removeIf(card -> card.getCardId() == cardId);
                 return true;
             }
@@ -175,19 +163,17 @@ public class Deck {
         return false;
     }
 
-    // Check deck validity with detailed error reporting
     public boolean checkDeckValidity() {
         ArrayList<String> errors = new ArrayList<>();
         deckValidity = true; // Start assuming valid
 
-        // Check 1: Total card count (must be exactly 100 for Commander)
+        // Checks total card count (must be exactly 100 for Commander)
         int totalCardCount = getTotalCardCount();
         if (totalCardCount != 100) {
             errors.add("Deck must contain exactly 100 cards. Current count: " + totalCardCount);
             deckValidity = false;
         }
 
-        // Check 2: Exactly one commander
         if (commanderCard == null) {
             errors.add("Deck must have exactly one Commander");
             deckValidity = false;
@@ -196,7 +182,6 @@ public class Deck {
             deckValidity = false;
         }
 
-        // Check 3: Banned cards
         ArrayList<Card> bannedCards = getBannedCards();
         if (!bannedCards.isEmpty()) {
             for (Card bannedCard : bannedCards) {
@@ -205,7 +190,6 @@ public class Deck {
             deckValidity = false;
         }
 
-        // Check 4: Game Changer limits based on bracket
         int gcCount = getGameChangerCount();
         switch (bracketNum) {
             case 1:
@@ -223,14 +207,12 @@ public class Deck {
                 break;
             case 4:
             case 5:
-                // No limit for brackets 4-5
                 break;
             default:
                 errors.add("Invalid bracket number: " + bracketNum);
                 deckValidity = false;
         }
 
-        // Check 5: Singleton rule (except basic lands)
         ArrayList<String> duplicateCards = getDuplicateCards();
         if (!duplicateCards.isEmpty()) {
             for (String duplicate : duplicateCards) {
@@ -239,7 +221,6 @@ public class Deck {
             deckValidity = false;
         }
 
-        // Print all errors
         if (!errors.isEmpty()) {
             System.out.println("\n=== DECK VALIDATION ERRORS ===");
             for (String error : errors) {
@@ -252,7 +233,6 @@ public class Deck {
         return deckValidity;
     }
 
-    // Helper methods for validation
     private int getTotalCardCount() {
         String sql = "SELECT SUM(quantity) as total FROM deck_cards WHERE deck_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -315,7 +295,6 @@ public class Deck {
         return duplicates;
     }
 
-    // Save deck to database
     public boolean saveDeck() throws SQLException {
         String sql = "INSERT INTO deck (deck_id, deck_name, player_id, commander_card_id, bracket_info, mana_base, salt_score, description) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
@@ -338,7 +317,6 @@ public class Deck {
         }
     }
 
-    // Display deck info with card types
     public void displayDeckInfo() {
         System.out.println("\n=== DECK INFORMATION ===");
         System.out.println("Deck ID: " + deckID);
@@ -350,7 +328,6 @@ public class Deck {
         System.out.println("Total Cards: " + getTotalCardCount());
         System.out.println("Validity: " + (deckValidity ? "Valid" : "Invalid"));
 
-        // Display card breakdown by type
         System.out.println("\n--- Card Breakdown ---");
         int creatures = 0, artifacts = 0, instants = 0, sorceries = 0, lands = 0, others = 0;
 
@@ -371,7 +348,6 @@ public class Deck {
         if (others > 0) System.out.println("Others: " + others);
     }
 
-    // Close database connection
     public void close() {
         try {
             if (connection != null && !connection.isClosed()) {

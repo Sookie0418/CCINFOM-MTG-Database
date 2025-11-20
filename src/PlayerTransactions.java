@@ -162,8 +162,6 @@ public class PlayerTransactions {
             return false;
         }
     }
-    
-    // Method to close the database connection when the transactions object is done
     public void close() {
         dbConnection.closeConnection();
     }
