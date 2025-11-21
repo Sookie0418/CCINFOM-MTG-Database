@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.net.URL;
 
 /**
  * The central navigation hub (Dashboard) displayed after a successful login.
@@ -23,7 +24,7 @@ public class DashboardGUI extends JFrame {
     private static final Font HEADER_FONT = new Font("Arial", Font.BOLD, 28);
     private static final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 18);
     private static final Color BUTTON_COLOR = new Color(50, 50, 50); // Darker gray button base
-    private static final String TASKBAR_ICON_FILE = "taskbar_icon.png";
+    private static final String TASKBAR_ICON_FILE = "/images/taskbar_icon.png";
 
 
     public DashboardGUI(MTGDatabaseController controller) {
@@ -50,14 +51,15 @@ public class DashboardGUI extends JFrame {
         navPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 50, 50));
 
         try {
-            File iconFile = new File(TASKBAR_ICON_FILE);
-            if (iconFile.exists()) {
-                Image iconImage = new ImageIcon(iconFile.getAbsolutePath()).getImage();
+            URL iconUrl = getClass().getResource(TASKBAR_ICON_FILE);
+            if (iconUrl != null) {
+                Image iconImage = new ImageIcon(iconUrl).getImage();
                 this.setIconImage(iconImage); // Set the taskbar and window icon
             }
         } catch (Exception e) {
             System.err.println("Failed to load application icon: " + e.getMessage());
         }
+
 
         // Create and add buttons
         navPanel.add(createNavButton("Card Inventory", e -> launchGUI(new CardGUI(controller))));
