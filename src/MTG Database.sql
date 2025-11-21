@@ -16,7 +16,7 @@ CREATE TABLE card (
     card_id INT AUTO_INCREMENT PRIMARY KEY,
     card_name VARCHAR(100) NOT NULL,
     card_mana_cost VARCHAR(50),
-    card_typcarde VARCHAR(50),
+    card_type VARCHAR(50),
     card_subtype VARCHAR(50),
     card_power VARCHAR(10),
     card_toughness VARCHAR(10),
@@ -32,8 +32,6 @@ CREATE TABLE deck (
     player_id INT NOT NULL,
     commander_card_id INT,
     bracket_info VARCHAR(50),
-    mana_base VARCHAR(100),
-    salt_score DECIMAL(4,2),
     validity ENUM('Valid', 'Invalid') DEFAULT 'Valid',
     description TEXT,
     FOREIGN KEY (player_id) REFERENCES player(player_id)
