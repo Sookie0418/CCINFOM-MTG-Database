@@ -322,9 +322,10 @@ public class Deck {
     }
 
     // Save deck to database
+    // Save deck to database
     public boolean saveDeck() throws SQLException {
         String sql = "INSERT INTO deck (deck_id, deck_name, player_id, commander_card_id, bracket_info, description) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
+                "VALUES (?, ?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE " +
                 "deck_name = VALUES(deck_name), player_id = VALUES(player_id), " +
                 "commander_card_id = VALUES(commander_card_id), bracket_info = VALUES(bracket_info), " +
@@ -334,7 +335,7 @@ public class Deck {
             stmt.setInt(1, deckID);
             stmt.setString(2, deckName);
             stmt.setInt(3, ownerID);
-            stmt.setInt(4, commanderCard != null ? commanderCard.getCardId() : 0);
+            stmt.setInt(4, getCommanderCardId()); // Use the ID from the card object
             stmt.setString(5, "Bracket " + bracketNum);
             stmt.setString(6, description);
 
@@ -401,12 +402,27 @@ public class Deck {
     }
 
     public void setCommanderCardId(int commanderCardId) {
-        // This sets the commander card ID - you might need to load the actual card object
-        // For now, we'll just store the ID
-        if (this.commanderCard != null) {
-            this.commanderCard = null; // Clear current commander
+        if (commanderCardId > 0) {
+            try {
+                // Load the card from database
+                String sql = "SELECT * FROM card WHERE card_id = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                    stmt.setInt(1, commanderCardId);
+                    ResultSet rs = stmt.executeQuery();
+                    if (rs.next()) {
+                        this.commanderCard = CardFactory.createCardFromResultSet(rs);
+                    } else {
+                        this.commanderCard = null;
+                        System.err.println("Card with ID " + commanderCardId + " not found");
+                    }
+                }
+            } catch (SQLException e) {
+                System.err.println("Error loading commander card: " + e.getMessage());
+                this.commanderCard = null;
+            }
+        } else {
+            this.commanderCard = null;
         }
-        // Note: You'll need to load the actual Card object if needed
     }
 
     public void setBracketInfo(String bracketInfo) {

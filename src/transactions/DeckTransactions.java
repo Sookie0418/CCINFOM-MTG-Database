@@ -1,6 +1,6 @@
 package transactions;
 import connection.DatabaseConnection;
-import entity.Deck;
+import entity.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -52,14 +52,50 @@ public class DeckTransactions {
             throw new SQLException("No database connection available");
         }
 
-        String sql = "INSERT INTO deck_cards (deck_id, card_id, quantity, is_commander) VALUES (?, ?, ?, ?)";
+        // Start a transaction to ensure both operations succeed or fail together
+        conn.setAutoCommit(false);
 
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, deckId);
-            pstmt.setInt(2, cardId);
-            pstmt.setInt(3, quantity);
-            pstmt.setBoolean(4, isCommander);
-            return pstmt.executeUpdate() > 0;
+        try {
+            // First, add the card to deck_cards table
+            String sql = "INSERT INTO deck_cards (deck_id, card_id, quantity, is_commander) VALUES (?, ?, ?, ?) " +
+                    "ON DUPLICATE KEY UPDATE quantity = quantity + ?, is_commander = ?";
+
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setInt(1, deckId);
+                pstmt.setInt(2, cardId);
+                pstmt.setInt(3, quantity);
+                pstmt.setBoolean(4, isCommander);
+                pstmt.setInt(5, quantity);
+                pstmt.setBoolean(6, isCommander);
+                pstmt.executeUpdate();
+            }
+
+            // If this card is set as commander, update the deck table
+            if (isCommander) {
+                String updateDeckSql = "UPDATE deck SET commander_card_id = ? WHERE deck_id = ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(updateDeckSql)) {
+                    pstmt.setInt(1, cardId);
+                    pstmt.setInt(2, deckId);
+                    pstmt.executeUpdate();
+                }
+
+                // Also, set all other cards in this deck as non-commander
+                String clearOtherCommandersSql = "UPDATE deck_cards SET is_commander = FALSE WHERE deck_id = ? AND card_id != ?";
+                try (PreparedStatement pstmt = conn.prepareStatement(clearOtherCommandersSql)) {
+                    pstmt.setInt(1, deckId);
+                    pstmt.setInt(2, cardId);
+                    pstmt.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            conn.rollback();
+            throw e;
+        } finally {
+            conn.setAutoCommit(true);
         }
     }
 
@@ -132,7 +168,8 @@ public class DeckTransactions {
             throw new SQLException("No database connection available");
         }
 
-        String sql = "SELECT deck_id, deck_name, player_id, commander_card_id, bracket_info, validity, description FROM deck";
+        String sql = "SELECT d.deck_id, d.deck_name, d.player_id, d.commander_card_id, d.bracket_info, d.validity, d.description " +
+                "FROM deck d";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
@@ -141,7 +178,14 @@ public class DeckTransactions {
                 int deckId = rs.getInt("deck_id");
                 String deckName = rs.getString("deck_name");
                 int playerId = rs.getInt("player_id");
-                int commanderId = rs.getInt("commander_card_id");
+
+                // Use getObject to handle NULL values properly
+                Object commanderIdObj = rs.getObject("commander_card_id");
+                Integer commanderId = null;
+                if (commanderIdObj != null) {
+                    commanderId = (Integer) commanderIdObj;
+                }
+
                 String bracketInfo = rs.getString("bracket_info");
                 String validity = rs.getString("validity");
                 String description = rs.getString("description");
@@ -151,14 +195,39 @@ public class DeckTransactions {
                 deck.setDeckId(deckId);
                 deck.setDeckName(deckName);
                 deck.setPlayerId(playerId);
-                deck.setCommanderCardId(commanderId);
                 deck.setBracketInfo(bracketInfo);
                 deck.setValidity(validity);
                 deck.setDescription(description);
+
+                // Load the commander card if it exists
+                if (commanderId != null && commanderId > 0) {
+                    try {
+                        // Load the commander card using CardFactory or your card loading logic
+                        Card commanderCard = loadCardById(commanderId, conn);
+                        if (commanderCard != null) {
+                            deck.setCommanderCard(commanderCard);
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error loading commander card ID " + commanderId + " for deck " + deckId + ": " + e.getMessage());
+                    }
+                }
 
                 decks.add(deck);
             }
         }
         return decks;
+    }
+
+    // Helper method to load a card by ID
+    private Card loadCardById(int cardId, Connection conn) throws SQLException {
+        String sql = "SELECT * FROM card WHERE card_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, cardId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return CardFactory.createCardFromResultSet(rs);
+            }
+        }
+        return null;
     }
 }

@@ -555,16 +555,4 @@ public class BorrowReqGUI extends JFrame {
             JOptionPane.showMessageDialog(this, "Error checking availability: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-    public static void main(String[] args) {
-        // For testing purposes
-        SwingUtilities.invokeLater(() -> {
-            try {
-                MTGDatabaseController controller = new MTGDatabaseController();
-                new BorrowReqGUI(controller);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
 }

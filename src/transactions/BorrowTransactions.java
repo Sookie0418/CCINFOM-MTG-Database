@@ -55,20 +55,20 @@ public class BorrowTransactions {
      */
     public boolean isDeckAvailable(int deckId) {
         Connection conn = dbConnection.getConnection();
-        String sql = "SELECT COUNT(*) FROM borrow_request WHERE deck_id = ? AND status IN ('Pending', 'Approved')";
+        // A deck is available if there are no active borrows (Approved status with Immediate type)
+        String sql = "SELECT COUNT(*) FROM borrow_request WHERE deck_id = ? AND status IN ('Approved', 'Pending') AND borrow_type = 'Immediate'";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, deckId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    // If count is 0, it's available. If > 0, someone has it.
                     return rs.getInt(1) == 0;
                 }
             }
         } catch (SQLException e) {
             System.err.println("Availability check failed: " + e.getMessage());
         }
-        return false; // Default to unavailable on error for safety
+        return false;
     }
 
     /**
@@ -81,14 +81,19 @@ public class BorrowTransactions {
     public boolean requestBorrow(int playerId, int deckId) {
         Connection conn = dbConnection.getConnection();
         boolean available = isDeckAvailable(deckId);
-        String borrowType = available ? "Available Borrow" : "Pending Borrow";
-        String sql = "INSERT INTO borrow_request (player_id, deck_id, borrow_type, request_date, status) VALUES (?, ?, ?, ?, 'Pending')";
+
+        String borrowType = available ? "Immediate" : "Wait";
+        // If available, set status to Approved. If waiting, set to Pending.
+        String status = available ? "Approved" : "Pending";
+
+        String sql = "INSERT INTO borrow_request (player_id, deck_id, borrow_type, request_date, status) VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, playerId);
             pstmt.setInt(2, deckId);
             pstmt.setString(3, borrowType);
-            pstmt.setDate(4, Date.valueOf(LocalDate.now())); // Current date
+            pstmt.setDate(4, Date.valueOf(LocalDate.now()));
+            pstmt.setString(5, status);
 
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
@@ -101,17 +106,163 @@ public class BorrowTransactions {
     /**
      * Updates a borrow request to "Returned".
      */
+    /**
+     * Updates a borrow request to "Returned" and promotes the next waiting request if any.
+     */
+    /**
+     * Updates a borrow request to "Returned", promotes the next waiting request if any,
+     * and cleans up old returned records after 2 cycles.
+     */
     public boolean returnDeck(int borrowCode) {
         Connection conn = dbConnection.getConnection();
-        String sql = "UPDATE borrow_request SET status = 'Returned', return_date = ? WHERE borrow_code = ?";
 
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setDate(1, Date.valueOf(LocalDate.now()));
-            pstmt.setInt(2, borrowCode);
-            return pstmt.executeUpdate() > 0;
+        try {
+            conn.setAutoCommit(false); // Start transaction
+
+            // 1. Get the deck_id from the current borrow being returned
+            String getDeckSql = "SELECT deck_id FROM borrow_request WHERE borrow_code = ?";
+            int deckId;
+            try (PreparedStatement pstmt = conn.prepareStatement(getDeckSql)) {
+                pstmt.setInt(1, borrowCode);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        deckId = rs.getInt("deck_id");
+                    } else {
+                        throw new SQLException("Borrow code not found: " + borrowCode);
+                    }
+                }
+            }
+
+            // 2. Mark the current borrow as returned
+            String returnSql = "UPDATE borrow_request SET status = 'Returned', return_date = ? WHERE borrow_code = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(returnSql)) {
+                pstmt.setDate(1, Date.valueOf(LocalDate.now()));
+                pstmt.setInt(2, borrowCode);
+                int affectedRows = pstmt.executeUpdate();
+                if (affectedRows == 0) {
+                    throw new SQLException("Failed to return deck for borrow code: " + borrowCode);
+                }
+            }
+
+            // 3. Find and promote the next waiting request for this deck
+            promoteNextWaitingRequest(conn, deckId);
+
+            // 4. Clean up old returned records (keep only the last 2 cycles)
+            cleanupOldReturnedRecords(conn, deckId);
+
+            conn.commit(); // Commit transaction
+            return true;
+
         } catch (SQLException e) {
+            try {
+                conn.rollback(); // Rollback on error
+            } catch (SQLException rollbackEx) {
+                System.err.println("Rollback failed: " + rollbackEx.getMessage());
+            }
             System.err.println("Error returning deck: " + e.getMessage());
             return false;
+        } finally {
+            try {
+                conn.setAutoCommit(true); // Reset auto-commit
+            } catch (SQLException e) {
+                System.err.println("Error resetting auto-commit: " + e.getMessage());
+            }
         }
+    }
+
+    /**
+     * Cleans up old returned records, keeping only the most recent 2 borrowing cycles
+     */
+    private void cleanupOldReturnedRecords(Connection conn, int deckId) throws SQLException {
+        // Count how many returned records exist for this deck
+        String countSql = "SELECT COUNT(*) FROM borrow_request WHERE deck_id = ? AND status = 'Returned'";
+        int returnedCount;
+        try (PreparedStatement pstmt = conn.prepareStatement(countSql)) {
+            pstmt.setInt(1, deckId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    returnedCount = rs.getInt(1);
+                } else {
+                    returnedCount = 0;
+                }
+            }
+        }
+
+        // If we have more than 2 returned records, delete the oldest ones
+        if (returnedCount > 2) {
+            String deleteSql = "DELETE FROM borrow_request WHERE borrow_code IN (" +
+                    "SELECT borrow_code FROM (" +
+                    "    SELECT borrow_code FROM borrow_request " +
+                    "    WHERE deck_id = ? AND status = 'Returned' " +
+                    "    ORDER BY return_date ASC LIMIT ?" +
+                    ") AS old_records" +
+                    ")";
+
+            int recordsToDelete = returnedCount - 2; // Keep only the 2 most recent
+
+            try (PreparedStatement pstmt = conn.prepareStatement(deleteSql)) {
+                pstmt.setInt(1, deckId);
+                pstmt.setInt(2, recordsToDelete);
+                int deleted = pstmt.executeUpdate();
+                System.out.println("Cleaned up " + deleted + " old returned records for deck " + deckId);
+            }
+        }
+    }
+
+    /**
+     * Promotes the next waiting borrow request to immediate for a given deck.
+     */
+    private void promoteNextWaitingRequest(Connection conn, int deckId) throws SQLException {
+        // Find the oldest waiting request for this deck
+        String findWaitingSql = "SELECT borrow_code FROM borrow_request " +
+                "WHERE deck_id = ? AND status = 'Pending' AND borrow_type = 'Wait' " +
+                "ORDER BY request_date ASC LIMIT 1";
+
+        Integer nextBorrowCode = null;
+        try (PreparedStatement pstmt = conn.prepareStatement(findWaitingSql)) {
+            pstmt.setInt(1, deckId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    nextBorrowCode = rs.getInt("borrow_code");
+                }
+            }
+        }
+
+        // If found, promote it to immediate
+        if (nextBorrowCode != null) {
+            String promoteSql = "UPDATE borrow_request SET borrow_type = 'Immediate', status = 'Approved' WHERE borrow_code = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(promoteSql)) {
+                pstmt.setInt(1, nextBorrowCode);
+                pstmt.executeUpdate();
+                System.out.println("Promoted borrow request " + nextBorrowCode + " to Immediate for deck " + deckId);
+            }
+        }
+    }
+
+    /**
+     * Gets the queue position for a waiting borrow request.
+     */
+    public int getQueuePosition(int borrowCode) {
+        Connection conn = dbConnection.getConnection();
+        String sql = "SELECT br1.borrow_code, " +
+                "(SELECT COUNT(*) FROM borrow_request br2 " +
+                " WHERE br2.deck_id = br1.deck_id " +
+                " AND br2.status = 'Pending' " +
+                " AND br2.borrow_type = 'Wait' " +
+                " AND br2.request_date < br1.request_date) as queue_position " +
+                "FROM borrow_request br1 " +
+                "WHERE br1.borrow_code = ?";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, borrowCode);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("queue_position") + 1; // 1-based position
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting queue position: " + e.getMessage());
+        }
+        return -1; // Error or not found
     }
 }
