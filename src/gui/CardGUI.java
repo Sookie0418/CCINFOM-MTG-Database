@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
+import java.net.URL;
 
 /**
  * A Java Swing GUI for managing Card records (CRUD).
@@ -25,7 +26,7 @@ public class CardGUI extends JFrame {
     private static final Color INPUT_BG = new Color(45, 45, 45);
     private static final Font BOLD_FONT = new Font("Arial", Font.BOLD, 12);
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 18);
-    private static final String TASKBAR_ICON_FILE = "taskbar_icon.png";
+    private static final String TASKBAR_ICON_FILE = "/images/taskbar_icon.png";
 
     // --- UI Components ---
     private JTable dataTable;
@@ -85,14 +86,15 @@ public class CardGUI extends JFrame {
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
 
         try {
-            File iconFile = new File(TASKBAR_ICON_FILE);
-            if (iconFile.exists()) {
-                Image iconImage = new ImageIcon(iconFile.getAbsolutePath()).getImage();
+            URL iconUrl = getClass().getResource(TASKBAR_ICON_FILE);
+            if (iconUrl != null) {
+                Image iconImage = new ImageIcon(iconUrl).getImage();
                 this.setIconImage(iconImage); // Set the taskbar and window icon
             }
         } catch (Exception e) {
             System.err.println("Failed to load application icon: " + e.getMessage());
         }
+
 
 
         // Add Title

@@ -15,10 +15,11 @@ import java.sql.SQLException;
 import java.util.Map;
 import javax.swing.JDialog;
 import javax.swing.JCheckBox;
+import java.net.URL;
 
 /**
  * A Java Swing GUI for managing Decks and Deck Transactions.
- * STYLED with a Dark MTG theme.
+ * STYLED with a Dark MTG theme.S
  */
 public class DeckGUI extends JFrame {
 
@@ -29,7 +30,7 @@ public class DeckGUI extends JFrame {
     private static final Color INPUT_BG = new Color(45, 45, 45);
     private static final Font BOLD_FONT = new Font("Arial", Font.BOLD, 12);
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 18);
-    private static final String TASKBAR_ICON_FILE = "taskbar_icon.png";
+    private static final String TASKBAR_ICON_FILE = "/images/taskbar_icon.png";
 
     // --- UI Components ---
     private JTable deckTable;
@@ -85,14 +86,15 @@ public class DeckGUI extends JFrame {
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
 
         try {
-            File iconFile = new File(TASKBAR_ICON_FILE);
-            if (iconFile.exists()) {
-                Image iconImage = new ImageIcon(iconFile.getAbsolutePath()).getImage();
-                this.setIconImage(iconImage);
+            URL iconUrl = getClass().getResource(TASKBAR_ICON_FILE);
+            if (iconUrl != null) {
+                Image iconImage = new ImageIcon(iconUrl).getImage();
+                this.setIconImage(iconImage); // Set the taskbar and window icon
             }
         } catch (Exception e) {
             System.err.println("Failed to load application icon: " + e.getMessage());
         }
+
 
         // Add Title
         JLabel mainTitle = new JLabel("DECK MANAGEMENT", SwingConstants.CENTER);
