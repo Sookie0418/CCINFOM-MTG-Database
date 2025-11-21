@@ -132,7 +132,7 @@ public class DeckTransactions {
             throw new SQLException("No database connection available");
         }
 
-        String sql = "SELECT deck_id, deck_name, player_id, commander_card_id, bracket_info, salt_score, validity, description FROM deck";
+        String sql = "SELECT deck_id, deck_name, player_id, commander_card_id, bracket_info, validity, description FROM deck";
 
         try (PreparedStatement pstmt = conn.prepareStatement(sql);
              ResultSet rs = pstmt.executeQuery()) {
@@ -143,7 +143,6 @@ public class DeckTransactions {
                 int playerId = rs.getInt("player_id");
                 int commanderId = rs.getInt("commander_card_id");
                 String bracketInfo = rs.getString("bracket_info");
-                double saltScore = rs.getDouble("salt_score");
                 String validity = rs.getString("validity");
                 String description = rs.getString("description");
 
@@ -154,7 +153,6 @@ public class DeckTransactions {
                 deck.setPlayerId(playerId);
                 deck.setCommanderCardId(commanderId);
                 deck.setBracketInfo(bracketInfo);
-                deck.setSaltScore(saltScore);
                 deck.setValidity(validity);
                 deck.setDescription(description);
 

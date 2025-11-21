@@ -260,4 +260,26 @@ public class MTGDatabaseController {
         }
         return cards;
     }
+
+    // Add this method to your MTGDatabaseController class
+    public boolean deleteDeck(int deckId) throws SQLException {
+        Connection connection = DatabaseConnection.getConnection();
+
+        // First check if there are any active borrow requests for this deck
+        String checkBorrowSql = "SELECT COUNT(*) as active_requests FROM borrow_request WHERE deck_id = ? AND status IN ('Pending', 'Approved')";
+        try (PreparedStatement checkStmt = connection.prepareStatement(checkBorrowSql)) {
+            checkStmt.setInt(1, deckId);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next() && rs.getInt("active_requests") > 0) {
+                return false; // Cannot delete deck with active borrow requests
+            }
+        }
+
+        // Delete the deck (cascade delete will handle deck_cards due to foreign key constraints)
+        String deleteSql = "DELETE FROM deck WHERE deck_id = ?";
+        try (PreparedStatement deleteStmt = connection.prepareStatement(deleteSql)) {
+            deleteStmt.setInt(1, deckId);
+            return deleteStmt.executeUpdate() > 0;
+        }
+    }
 }

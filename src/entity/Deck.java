@@ -410,21 +410,30 @@ public class Deck {
     }
 
     public void setBracketInfo(String bracketInfo) {
-        // Parse bracket number from string like "Bracket 3"
-        if (bracketInfo != null && bracketInfo.startsWith("Bracket ")) {
-            try {
-                this.bracketNum = Integer.parseInt(bracketInfo.substring(8));
-            } catch (NumberFormatException e) {
-                this.bracketNum = 0;
+        if (bracketInfo != null && !bracketInfo.trim().isEmpty()) {
+            // Handle different bracket info formats
+            if (bracketInfo.startsWith("Bracket ")) {
+                try {
+                    this.bracketNum = Integer.parseInt(bracketInfo.substring(8).trim());
+                } catch (NumberFormatException e) {
+                    this.bracketNum = 0; // Default if parsing fails
+                }
+            } else {
+                try {
+                    // Try to parse as direct number
+                    this.bracketNum = Integer.parseInt(bracketInfo.trim());
+                } catch (NumberFormatException e) {
+                    this.bracketNum = 0; // Default if parsing fails
+                }
             }
         } else {
-            this.bracketNum = 0;
+            this.bracketNum = 0; // Default for empty/null
         }
     }
 
-    public void setSaltScore(double saltScore) {
-        // You might want to add a saltScore field to your class
-        // For now, we'll ignore it since your constructor doesn't have it
+    // Add this getter for bracket info as string
+    public String getBracketInfo() {
+        return bracketNum > 0 ? "Bracket " + bracketNum : "Not Set";
     }
 
     public void setValidity(String validity) {

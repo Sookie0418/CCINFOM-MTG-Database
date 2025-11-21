@@ -50,6 +50,7 @@ public class DeckGUI extends JFrame {
     private JButton addCardButton;
     private JButton viewCardsButton;
     private JButton refreshButton;
+    private JButton deleteDeckButton;
     private JButton clearButton;
     private JLabel statusLabel;
 
@@ -199,7 +200,6 @@ public class DeckGUI extends JFrame {
      * Creates and configures the JTable component for decks.
      */
     private void initializeTable() {
-        // Remove "Mana Base" and "Salt Score" from column names
         String[] columnNames = {"Deck ID", "Deck Name", "Player ID", "Commander ID", "Bracket Info", "Validity", "Description"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -255,7 +255,7 @@ public class DeckGUI extends JFrame {
                 TitledBorder.TOP,
                 BOLD_FONT.deriveFont(Font.ITALIC, 14),
                 FG_LIGHT));
-        deckPanel.setPreferredSize(new Dimension(350, 600));
+        deckPanel.setPreferredSize(new Dimension(350, 700));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(4, 5, 4, 5);
@@ -337,7 +337,7 @@ public class DeckGUI extends JFrame {
         y += 2; gbc.weighty = 0; gbc.gridwidth = 1;
 
         // --- Button Panel ---
-        JPanel buttonPanel = new JPanel(new GridLayout(6, 1, 10, 10));
+        JPanel buttonPanel = new JPanel(new GridLayout(7, 1, 10, 10));
         buttonPanel.setOpaque(false);
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
@@ -346,6 +346,7 @@ public class DeckGUI extends JFrame {
         styleButton(validateDeckButton, new Color(255, 140, 0)); // Orange for validate
         styleButton(addCardButton, new Color(70, 130, 180)); // Steel blue for add card
         styleButton(viewCardsButton, new Color(100, 100, 200)); // Purple for view cards
+        styleButton(deleteDeckButton, new Color(200, 0, 0)); // RED for delete
         styleButton(refreshButton, new Color(100, 100, 100)); // Gray for refresh
         styleButton(clearButton, new Color(90, 90, 90)); // Dark gray for clear
 
@@ -353,6 +354,7 @@ public class DeckGUI extends JFrame {
         buttonPanel.add(validateDeckButton);
         buttonPanel.add(addCardButton);
         buttonPanel.add(viewCardsButton);
+        buttonPanel.add(deleteDeckButton);
         buttonPanel.add(refreshButton);
         buttonPanel.add(clearButton);
 
@@ -414,6 +416,7 @@ public class DeckGUI extends JFrame {
         viewCardsButton = new JButton("View Deck Cards");
         refreshButton = new JButton("Refresh Table");
         clearButton = new JButton("Clear Form");
+        deleteDeckButton = new JButton("Delete Deck");
 
         // Action Listeners
         createDeckButton.addActionListener(this::handleCreateDeck);
@@ -422,6 +425,7 @@ public class DeckGUI extends JFrame {
         viewCardsButton.addActionListener(this::handleViewDeckCards);
         refreshButton.addActionListener(e -> refreshTable());
         clearButton.addActionListener(e -> clearForm());
+        deleteDeckButton.addActionListener(this::handleDeleteDeck);
     }
 
     /**
@@ -525,10 +529,10 @@ public class DeckGUI extends JFrame {
                         deck.getDeckId(),
                         deck.getDeckName(),
                         deck.getPlayerId(),
-                        deck.getCommanderCardId(),  // This should be column 3
-                        deck.getBracketNum(),       // This should be column 4
-                        deck.getValidity(),         // This should be column 5 (was column 7 before)
-                        deck.getDescription()       // This should be column 6 (was column 8 before)
+                        deck.getCommanderCardId(),                 // This should be column 3
+                        deck.getBracketInfo(),                     // Use the getter method instead of getBracketNum()
+                        deck.getValidity() ? "Valid" : "Invalid",  // This should be column 5 (was column 7 before)
+                        deck.getDescription()                      // This should be column 6 (was column 8 before)
                 };
                 tableModel.addRow(rowData);
             }
@@ -565,6 +569,31 @@ public class DeckGUI extends JFrame {
                 return;
             }
 
+            // Validate bracket info
+            if (!bracketInfo.isEmpty()) {
+                try {
+                    // Try to parse bracket info
+                    if (bracketInfo.startsWith("Bracket ")) {
+                        int bracketNum = Integer.parseInt(bracketInfo.substring(8).trim());
+                        if (bracketNum < 1 || bracketNum > 5) {
+                            JOptionPane.showMessageDialog(this, "Bracket must be between 1 and 5.", "Input Error", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                    } else {
+                        int bracketNum = Integer.parseInt(bracketInfo.trim());
+                        if (bracketNum < 1 || bracketNum > 5) {
+                            JOptionPane.showMessageDialog(this, "Bracket must be between 1 and 5.", "Input Error", JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+                        // Convert to proper format
+                        bracketInfo = "Bracket " + bracketNum;
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Bracket info must be a number (1-5) or 'Bracket X' format.", "Input Error", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+            }
+
             int newDeckId = controller.createDeck(deckName, playerId, bracketInfo, description);
 
             if (newDeckId != -1) {
@@ -573,11 +602,13 @@ public class DeckGUI extends JFrame {
                 validateDeckButton.setEnabled(true);
                 addCardButton.setEnabled(true);
                 viewCardsButton.setEnabled(true);
+                deleteDeckButton.setEnabled(true); // Enable delete for new deck
 
                 statusArea.setText("Deck created successfully!\n" +
                         "Deck ID: " + newDeckId + "\n" +
                         "Deck Name: " + deckName + "\n" +
                         "Player ID: " + playerId + "\n" +
+                        "Bracket: " + (bracketInfo.isEmpty() ? "Not set" : bracketInfo) + "\n" +
                         "Status: Created (Invalid - needs validation)");
                 statusLabel.setText("Deck created successfully with ID: " + newDeckId);
                 clearForm();
@@ -1013,6 +1044,62 @@ public class DeckGUI extends JFrame {
             JOptionPane.showMessageDialog(this, "Invalid deck ID.", "Input Error", JOptionPane.WARNING_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error loading deck cards: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void handleDeleteDeck(ActionEvent e) {
+        try {
+            String deckIdText = deckIdField.getText().trim();
+            if (deckIdText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please select a deck to delete first.", "No Deck Selected", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int deckId = Integer.parseInt(deckIdText);
+            String deckName = deckNameField.getText().trim();
+
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Are you sure you want to delete this deck?\n" +
+                            "Deck ID: " + deckId + "\n" +
+                            "Deck Name: " + (deckName.isEmpty() ? "Unnamed Deck" : deckName) + "\n\n" +
+                            "This will also remove all cards from the deck!",
+                    "Confirm Deck Deletion",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                // Call controller to delete deck
+                boolean success = controller.deleteDeck(deckId);
+
+                if (success) {
+                    JOptionPane.showMessageDialog(this,
+                            "Deck deleted successfully!\n" +
+                                    "Deck ID: " + deckId + "\n" +
+                                    "Deck Name: " + deckName,
+                            "Deck Deleted",
+                            JOptionPane.INFORMATION_MESSAGE);
+
+                    statusArea.setText("Deck deleted successfully!\n\n" +
+                            "Deleted Deck ID: " + deckId + "\n" +
+                            "Deleted Deck Name: " + deckName);
+                    statusLabel.setText("Deck deleted: " + deckName);
+
+                    clearForm();
+                    refreshTable();
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Failed to delete deck.\n" +
+                                    "The deck may not exist or there might be active borrow requests.",
+                            "Deletion Failed",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid deck ID.", "Input Error", JOptionPane.WARNING_MESSAGE);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Database error deleting deck: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error deleting deck: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
