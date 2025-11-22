@@ -219,6 +219,7 @@ public class BorrowReqGUI extends JFrame {
         header.setBackground(new Color(60, 60, 60));
         header.setForeground(FG_LIGHT);
         header.setFont(BOLD_FONT);
+        header.setReorderingAllowed(false);
 
         borrowTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 

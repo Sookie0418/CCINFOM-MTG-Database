@@ -235,6 +235,7 @@ public class PlayerGUI extends JFrame {
         header.setBackground(new Color(60, 60, 60));
         header.setForeground(FG_LIGHT);
         header.setFont(BOLD_FONT);
+        header.setReorderingAllowed(false);
 
         dataTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 

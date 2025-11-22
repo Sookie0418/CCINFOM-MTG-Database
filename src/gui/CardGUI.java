@@ -230,6 +230,7 @@ public class CardGUI extends JFrame {
         header.setBackground(new Color(60, 60, 60)); // Dark header
         header.setForeground(FG_LIGHT);
         header.setFont(BOLD_FONT);
+        header.setReorderingAllowed(false);
 
         dataTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 

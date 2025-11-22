@@ -227,6 +227,7 @@ public class DeckGUI extends JFrame {
         header.setBackground(new Color(60, 60, 60));
         header.setForeground(FG_LIGHT);
         header.setFont(BOLD_FONT);
+        header.setReorderingAllowed(false);
 
         deckTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -708,6 +709,7 @@ public class DeckGUI extends JFrame {
             cardListHeader.setBackground(new Color(60, 60, 60));
             cardListHeader.setForeground(FG_LIGHT);
             cardListHeader.setFont(BOLD_FONT.deriveFont(11f));
+            cardListHeader.setReorderingAllowed(false);
 
             JScrollPane cardListScroll = new JScrollPane(cardListTable);
 
@@ -1133,6 +1135,13 @@ public class DeckGUI extends JFrame {
                         default -> String.class;
                     };
                 }
+
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+
+
             };
 
             JTable cardsTable = new JTable(cardsModel);
@@ -1151,6 +1160,7 @@ public class DeckGUI extends JFrame {
             header.setBackground(new Color(60, 60, 60));
             header.setForeground(FG_LIGHT);
             header.setFont(BOLD_FONT);
+            header.setReorderingAllowed(false);
 
             JScrollPane scrollPane = new JScrollPane(cardsTable);
 
