@@ -26,6 +26,7 @@ public class CardGUI extends JFrame {
     private static final Color INPUT_BG = new Color(45, 45, 45);
     private static final Font BOLD_FONT = new Font("Arial", Font.BOLD, 12);
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 18);
+    private static final Color MENU_BAR_COLOR = new Color(40, 40, 40);
     private static final String TASKBAR_ICON_FILE = "/images/taskbar_icon.png";
 
     // --- UI Components ---
@@ -122,34 +123,51 @@ public class CardGUI extends JFrame {
      */
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
-        menuBar.setBackground(BG_DARK.brighter());
+        // Set menu bar background
+        menuBar.setBackground(MENU_BAR_COLOR);
         menuBar.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 60)));
 
         JMenu navMenu = new JMenu("Navigate");
         navMenu.setForeground(FG_LIGHT);
         navMenu.setFont(BOLD_FONT);
+        navMenu.setBackground(MENU_BAR_COLOR);
 
         JMenu appMenu = new JMenu("App");
         appMenu.setForeground(FG_LIGHT);
         appMenu.setFont(BOLD_FONT);
+        appMenu.setBackground(MENU_BAR_COLOR);
 
+        // Core Navigation Items
         JMenuItem dashboardItem = new JMenuItem("Dashboard");
         dashboardItem.addActionListener(e -> launchGUI(new DashboardGUI(controller)));
-        dashboardItem.setBackground(INPUT_BG);
-        dashboardItem.setForeground(FG_LIGHT);
 
         JMenuItem playerItem = new JMenuItem("Player Management");
         playerItem.addActionListener(e -> launchGUI(new PlayerGUI(controller)));
-        playerItem.setBackground(INPUT_BG);
-        playerItem.setForeground(FG_LIGHT);
+
+        // NEW: Deck and Borrow Management Items (from CardGUI)
+        JMenuItem deckItem = new JMenuItem("Deck Management");
+        deckItem.addActionListener(e -> launchGUI(new DeckGUI(controller)));
+
+        JMenuItem borrowItem = new JMenuItem("Borrow Requests");
+        borrowItem.addActionListener(e -> launchGUI(new BorrowReqGUI(controller)));
 
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(e -> System.exit(0));
-        exitItem.setBackground(INPUT_BG);
+
+        // Set styling for all menu items
+        JMenuItem[] items = {dashboardItem, playerItem, deckItem, borrowItem, exitItem};
+        for (JMenuItem item : items) {
+            item.setBackground(INPUT_BG);
+            item.setForeground(FG_LIGHT);
+        }
         exitItem.setForeground(ACCENT_RED); // Highlight exit
 
         navMenu.add(dashboardItem);
+        navMenu.addSeparator();
         navMenu.add(playerItem);
+        navMenu.add(deckItem);
+        navMenu.add(borrowItem);
+
         appMenu.add(exitItem);
 
         menuBar.add(appMenu);
