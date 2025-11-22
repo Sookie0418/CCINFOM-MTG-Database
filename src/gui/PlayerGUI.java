@@ -27,6 +27,7 @@ public class PlayerGUI extends JFrame {
     private static final Font BOLD_FONT = new Font("Arial", Font.BOLD, 12);
     private static final Font TITLE_FONT = new Font("Arial", Font.BOLD, 18);
     private static final Color BUTTON_BLUE = new Color(50, 150, 255); // Update Button Color
+    private static final Color MENU_BAR_COLOR = new Color(40, 40, 40);
     private static final String TASKBAR_ICON_FILE = "/images/taskbar_icon.png";
 
     // Reference to the controller
@@ -61,6 +62,8 @@ public class PlayerGUI extends JFrame {
 
         // Apply dark background to the frame
         getContentPane().setBackground(BG_DARK);
+
+        setJMenuBar(createMenuBar());
 
         // 2. Initialize Components
         initializeForm();
@@ -107,6 +110,75 @@ public class PlayerGUI extends JFrame {
 
         // Initial render of data
         refreshTable();
+    }
+    private JMenuBar createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        // Set menu bar background
+        menuBar.setBackground(MENU_BAR_COLOR);
+        menuBar.setBorder(BorderFactory.createLineBorder(new Color(60, 60, 60)));
+
+        JMenu navMenu = new JMenu("Navigate");
+        navMenu.setForeground(FG_LIGHT);
+        navMenu.setFont(BOLD_FONT);
+        navMenu.setBackground(MENU_BAR_COLOR);
+
+        JMenu appMenu = new JMenu("App");
+        appMenu.setForeground(FG_LIGHT);
+        appMenu.setFont(BOLD_FONT);
+        appMenu.setBackground(MENU_BAR_COLOR);
+
+        // Core Navigation Items
+        JMenuItem dashboardItem = new JMenuItem("Dashboard");
+        dashboardItem.addActionListener(e -> launchGUI(new DashboardGUI(controller)));
+
+        JMenuItem cardItem = new JMenuItem("Card Management");
+        cardItem.addActionListener(e -> launchGUI(new CardGUI(controller)));
+
+        JMenuItem playerItem = new JMenuItem("Player Management");
+        playerItem.addActionListener(e -> launchGUI(new PlayerGUI(controller)));
+
+        // NEW: Deck and Borrow Management Items (from CardGUI)
+        JMenuItem deckItem = new JMenuItem("Deck Management");
+        deckItem.addActionListener(e -> launchGUI(new DeckGUI(controller)));
+
+        JMenuItem borrowItem = new JMenuItem("Borrow Requests");
+        borrowItem.addActionListener(e -> launchGUI(new BorrowReqGUI(controller)));
+
+        JMenuItem exitItem = new JMenuItem("Exit");
+        exitItem.addActionListener(e -> System.exit(0));
+
+        // Set styling for all menu items
+        JMenuItem[] items = {dashboardItem, cardItem, playerItem, deckItem, borrowItem, exitItem};
+        for (JMenuItem item : items) {
+            item.setBackground(INPUT_BG);
+            item.setForeground(FG_LIGHT);
+        }
+        exitItem.setForeground(ACCENT_RED); // Highlight exit
+
+        navMenu.add(dashboardItem);
+        navMenu.addSeparator();
+        navMenu.add(cardItem);
+        navMenu.add(deckItem);
+        navMenu.add(borrowItem);
+
+        appMenu.add(exitItem);
+
+        menuBar.add(appMenu);
+        menuBar.add(navMenu);
+
+        return menuBar;
+    }
+
+    /**
+     * Helper method to launch a new frame instance.
+     */
+    private void launchGUI(JFrame frame) {
+        frame.setVisible(true);
+        // We dispose of the current frame to show the Dashboard as the primary interface
+        // if navigating back, but keep it open if navigating to a utility window.
+        if (frame instanceof DashboardGUI) {
+            this.dispose();
+        }
     }
 
     /**
