@@ -282,4 +282,27 @@ public class MTGDatabaseController {
             return deleteStmt.executeUpdate() > 0;
         }
     }
+
+    // Add this method to your MTGDatabaseController class
+    public List<Map<String, Object>> getAllCardsSimple() throws SQLException {
+        List<Map<String, Object>> cards = new ArrayList<>();
+        Connection connection = DatabaseConnection.getConnection();
+
+        String sql = "SELECT card_id, card_name, card_type, card_mana_cost, card_status FROM card ORDER BY card_name";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Map<String, Object> card = new HashMap<>();
+                card.put("card_id", rs.getInt("card_id"));
+                card.put("card_name", rs.getString("card_name"));
+                card.put("card_type", rs.getString("card_type"));
+                card.put("mana_cost", rs.getString("card_mana_cost"));
+                card.put("status", rs.getString("card_status"));
+                cards.add(card);
+            }
+        }
+        return cards;
+    }
 }
