@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class DatabaseConnection {
     private static final String URL = "jdbc:mysql://127.0.0.1:3306/mtg_commander_db?useSSL=false&allowPublicKeyRetrieval=true";
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "password";
+    private static final String PASSWORD = "January122006";
     private static Connection sharedConnection = null;
 
     public static Connection getConnection() {
@@ -53,7 +53,7 @@ public class DatabaseConnection {
             sharedConnection = DriverManager.getConnection(
                     "jdbc:mysql://127.0.0.1:3306/mtg_commander_db?serverTimezone=UTC&useSSL=false",
                     "root",
-                    "password"
+                    "January122006"
             );
             System.out.println("✓ Database connection established successfully");
 

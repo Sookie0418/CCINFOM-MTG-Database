@@ -416,7 +416,7 @@ public class LoginGUI extends JFrame {
 
                 this.dispose();
 
-                SwingUtilities.invokeLater(() -> new DashboardGUI(controller));
+                SwingUtilities.invokeLater(() -> new DashboardGUI(controller, username));
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid Username or Password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
                 passwordField.setText("");

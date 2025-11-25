@@ -50,9 +50,11 @@ public class PlayerGUI extends JFrame {
 
     // Tracks the ID of the player currently being edited
     private int editingPlayerId = -1;
+    private String loggedInUsername;
 
-    public PlayerGUI(MTGDatabaseController controller) {
+    public PlayerGUI(MTGDatabaseController controller, String username) {
         this.controller = controller;
+        this.loggedInUsername = username;
 
         // 1. Frame Setup
         setTitle("MTG Commander Database System (Player Management)");
@@ -129,20 +131,20 @@ public class PlayerGUI extends JFrame {
 
         // Core Navigation Items
         JMenuItem dashboardItem = new JMenuItem("Dashboard");
-        dashboardItem.addActionListener(e -> launchGUI(new DashboardGUI(controller)));
+        dashboardItem.addActionListener(e -> launchGUI(new DashboardGUI(controller, loggedInUsername)));
 
         JMenuItem cardItem = new JMenuItem("Card Management");
-        cardItem.addActionListener(e -> launchGUI(new CardGUI(controller)));
+        cardItem.addActionListener(e -> launchGUI(new CardGUI(controller, loggedInUsername)));
 
         JMenuItem playerItem = new JMenuItem("Player Management");
-        playerItem.addActionListener(e -> launchGUI(new PlayerGUI(controller)));
+        playerItem.addActionListener(e -> launchGUI(new PlayerGUI(controller, loggedInUsername)));
 
         // NEW: Deck and Borrow Management Items (from CardGUI)
         JMenuItem deckItem = new JMenuItem("Deck Management");
-        deckItem.addActionListener(e -> launchGUI(new DeckGUI(controller)));
+        deckItem.addActionListener(e -> launchGUI(new DeckGUI(controller, loggedInUsername)));
 
         JMenuItem borrowItem = new JMenuItem("Borrow Requests");
-        borrowItem.addActionListener(e -> launchGUI(new BorrowReqGUI(controller)));
+        borrowItem.addActionListener(e -> launchGUI(new BorrowReqGUI(controller, loggedInUsername)));
 
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(e -> System.exit(0));

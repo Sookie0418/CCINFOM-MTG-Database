@@ -48,9 +48,11 @@ public class BorrowReqGUI extends JFrame {
     private JLabel statusLabel;
 
     private MTGDatabaseController controller;
+    private String loggedInUsername;
 
-    public BorrowReqGUI(MTGDatabaseController controller) {
+    public BorrowReqGUI(MTGDatabaseController controller, String username) {
         this.controller = controller;
+        this.loggedInUsername = username;
 
         // 1. Frame Setup
         setTitle("MTG Commander Database System (Borrow Request Management)");
@@ -131,16 +133,16 @@ public class BorrowReqGUI extends JFrame {
 
         // Core Navigation Items
         JMenuItem dashboardItem = new JMenuItem("Dashboard");
-        dashboardItem.addActionListener(e -> launchGUI(new DashboardGUI(controller)));
+        dashboardItem.addActionListener(e -> launchGUI(new DashboardGUI(controller, loggedInUsername)));
 
         JMenuItem cardItem = new JMenuItem("Card Management");
-        cardItem.addActionListener(e -> launchGUI(new CardGUI(controller)));
+        cardItem.addActionListener(e -> launchGUI(new CardGUI(controller, loggedInUsername)));
 
         JMenuItem playerItem = new JMenuItem("Player Management");
-        playerItem.addActionListener(e -> launchGUI(new PlayerGUI(controller)));
+        playerItem.addActionListener(e -> launchGUI(new PlayerGUI(controller, loggedInUsername)));
 
         JMenuItem deckItem = new JMenuItem("Deck Management");
-        deckItem.addActionListener(e -> launchGUI(new DeckGUI(controller)));
+        deckItem.addActionListener(e -> launchGUI(new DeckGUI(controller, loggedInUsername)));
 
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(e -> System.exit(0));

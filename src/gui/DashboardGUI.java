@@ -16,6 +16,7 @@ import java.net.URL;
 public class DashboardGUI extends JFrame {
 
     private final MTGDatabaseController controller;
+    private final String loggedInUsername;
 
     // --- Colors & Fonts ---
     private static final Color BG_DARK = new Color(30, 30, 30);
@@ -27,8 +28,9 @@ public class DashboardGUI extends JFrame {
     private static final String TASKBAR_ICON_FILE = "/images/taskbar_icon.png";
 
 
-    public DashboardGUI(MTGDatabaseController controller) {
+    public DashboardGUI(MTGDatabaseController controller, String username) {
         this.controller = controller;
+        this.loggedInUsername = username;
 
         // --- Frame Setup ---
         setTitle("MTG Commander DB - Dashboard");
@@ -46,40 +48,79 @@ public class DashboardGUI extends JFrame {
         add(header, BorderLayout.NORTH);
 
         // 2. Navigation Panel (Grid of buttons)
-        JPanel navPanel = new JPanel(new GridLayout(2, 2, 30, 30)); // 2x2 grid with spacing
-        navPanel.setBackground(BG_DARK);
-        navPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 50, 50));
-
-        try {
-            URL iconUrl = getClass().getResource(TASKBAR_ICON_FILE);
-            if (iconUrl != null) {
-                Image iconImage = new ImageIcon(iconUrl).getImage();
-                this.setIconImage(iconImage); // Set the taskbar and window icon
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to load application icon: " + e.getMessage());
-        }
-
-
-        // Create and add buttons
-        navPanel.add(createNavButton("Card Inventory", e -> launchGUI(new CardGUI(controller))));
-        navPanel.add(createNavButton("Player Records", e -> launchGUI(new PlayerGUI(controller))));
-        navPanel.add(createNavButton("Deck Management", e -> launchGUI(new DeckGUI(controller))));
-        navPanel.add(createNavButton("Borrow Requests", e -> launchGUI(new BorrowReqGUI(controller))));
-
+        JPanel navPanel = createNavigationPanel();
         add(navPanel, BorderLayout.CENTER);
 
         // 3. Footer (Logout)
-        JButton logoutButton = createStyledButton("Logout", new Color(150, 0, 0));
-        logoutButton.addActionListener(e -> handleLogout());
-
-        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        footerPanel.setBackground(BG_DARK);
-        footerPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
-        footerPanel.add(logoutButton);
+        JPanel footerPanel = createFooterPanel();
         add(footerPanel, BorderLayout.SOUTH);
 
         setVisible(true);
+    }
+
+    /**
+     * Creates the navigation panel with appropriate buttons based on user role
+     */
+    private JPanel createNavigationPanel() {
+        boolean isAdmin = "admin".equals(loggedInUsername);
+        
+        if (isAdmin) {
+            // 3x2 grid for admin (includes Reports button)
+            JPanel navPanel = new JPanel(new GridLayout(3, 2, 30, 30));
+            navPanel.setBackground(BG_DARK);
+            navPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 50, 50));
+
+            // Create and add buttons
+            navPanel.add(createNavButton("Card Inventory", e -> launchGUI(new CardGUI(controller, loggedInUsername))));
+            navPanel.add(createNavButton("Player Records", e -> launchGUI(new PlayerGUI(controller, loggedInUsername))));
+            navPanel.add(createNavButton("Deck Management", e -> launchGUI(new DeckGUI(controller, loggedInUsername))));
+            navPanel.add(createNavButton("Borrow Requests", e -> launchGUI(new BorrowReqGUI(controller, loggedInUsername))));
+            navPanel.add(createNavButton("Report Generator", e -> launchGUI(new ReportGUI(controller, loggedInUsername))));
+            
+            // Empty cell for the last position to maintain grid alignment
+            navPanel.add(new JLabel()); 
+
+            return navPanel;
+        } else {
+            // 2x2 grid for regular users
+            JPanel navPanel = new JPanel(new GridLayout(2, 2, 30, 30));
+            navPanel.setBackground(BG_DARK);
+            navPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 50, 50));
+
+            // Create and add buttons
+            navPanel.add(createNavButton("Card Inventory", e -> launchGUI(new CardGUI(controller, loggedInUsername))));
+            navPanel.add(createNavButton("Player Records", e -> launchGUI(new PlayerGUI(controller, loggedInUsername))));
+            navPanel.add(createNavButton("Deck Management", e -> launchGUI(new DeckGUI(controller, loggedInUsername))));
+            navPanel.add(createNavButton("Borrow Requests", e -> launchGUI(new BorrowReqGUI(controller, loggedInUsername))));
+
+            return navPanel;
+        }
+    }
+
+    /**
+     * Creates the footer panel with user info and logout button
+     */
+    private JPanel createFooterPanel() {
+        JPanel footerPanel = new JPanel(new BorderLayout());
+        footerPanel.setBackground(BG_DARK);
+        footerPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+
+        // User info on the left
+        JLabel userLabel = new JLabel("Logged in as: " + loggedInUsername);
+        userLabel.setForeground(FG_LIGHT);
+        userLabel.setFont(new Font("Arial", Font.ITALIC, 12));
+        footerPanel.add(userLabel, BorderLayout.WEST);
+
+        // Logout button on the right
+        JButton logoutButton = createStyledButton("Logout", new Color(150, 0, 0));
+        logoutButton.addActionListener(e -> handleLogout());
+
+        JPanel logoutPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        logoutPanel.setBackground(BG_DARK);
+        logoutPanel.add(logoutButton);
+        footerPanel.add(logoutPanel, BorderLayout.EAST);
+
+        return footerPanel;
     }
 
     /**
@@ -147,4 +188,5 @@ public class DashboardGUI extends JFrame {
             System.exit(0);
         }
     }
+
 }
