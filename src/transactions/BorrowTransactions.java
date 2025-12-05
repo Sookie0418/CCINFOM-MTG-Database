@@ -110,8 +110,7 @@ public class BorrowTransactions {
      * Updates a borrow request to "Returned" and promotes the next waiting request if any.
      */
     /**
-     * Updates a borrow request to "Returned", promotes the next waiting request if any,
-     * and cleans up old returned records after 2 cycles.
+     * Updates a borrow request to "Returned", promotes the next waiting request if any
      */
     public boolean returnDeck(int borrowCode) {
         Connection conn = dbConnection.getConnection();
@@ -147,9 +146,6 @@ public class BorrowTransactions {
             // 3. Find and promote the next waiting request for this deck
             promoteNextWaitingRequest(conn, deckId);
 
-            // 4. Clean up old returned records (keep only the last 2 cycles)
-            cleanupOldReturnedRecords(conn, deckId);
-
             conn.commit(); // Commit transaction
             return true;
 
@@ -170,44 +166,6 @@ public class BorrowTransactions {
         }
     }
 
-    /**
-     * Cleans up old returned records, keeping only the most recent 2 borrowing cycles
-     */
-    private void cleanupOldReturnedRecords(Connection conn, int deckId) throws SQLException {
-        // Count how many returned records exist for this deck
-        String countSql = "SELECT COUNT(*) FROM borrow_request WHERE deck_id = ? AND status = 'Returned'";
-        int returnedCount;
-        try (PreparedStatement pstmt = conn.prepareStatement(countSql)) {
-            pstmt.setInt(1, deckId);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    returnedCount = rs.getInt(1);
-                } else {
-                    returnedCount = 0;
-                }
-            }
-        }
-
-        // If we have more than 2 returned records, delete the oldest ones
-        if (returnedCount > 2) {
-            String deleteSql = "DELETE FROM borrow_request WHERE borrow_code IN (" +
-                    "SELECT borrow_code FROM (" +
-                    "    SELECT borrow_code FROM borrow_request " +
-                    "    WHERE deck_id = ? AND status = 'Returned' " +
-                    "    ORDER BY return_date ASC LIMIT ?" +
-                    ") AS old_records" +
-                    ")";
-
-            int recordsToDelete = returnedCount - 2; // Keep only the 2 most recent
-
-            try (PreparedStatement pstmt = conn.prepareStatement(deleteSql)) {
-                pstmt.setInt(1, deckId);
-                pstmt.setInt(2, recordsToDelete);
-                int deleted = pstmt.executeUpdate();
-                System.out.println("Cleaned up " + deleted + " old returned records for deck " + deckId);
-            }
-        }
-    }
 
     /**
      * Promotes the next waiting borrow request to immediate for a given deck.

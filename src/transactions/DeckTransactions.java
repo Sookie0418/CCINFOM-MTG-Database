@@ -139,7 +139,7 @@ public class DeckTransactions {
         }
 
         // 4. Update Status
-        boolean isValid = (totalCards == 100 && bannedCount == 0 && hasCommander);
+        boolean isValid = (totalCards == 10 && bannedCount == 0 && hasCommander);
         String updateSql = "UPDATE deck SET validity = ? WHERE deck_id = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
             pstmt.setString(1, isValid ? "Valid" : "Invalid");

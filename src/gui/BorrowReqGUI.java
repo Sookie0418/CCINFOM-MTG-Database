@@ -1,6 +1,7 @@
 package gui;
 import controller.*;
 import entity.BorrowRequest;
+import entity.Player;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -8,9 +9,10 @@ import javax.swing.table.JTableHeader;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.net.URL;
 
 /**
@@ -34,7 +36,8 @@ public class BorrowReqGUI extends JFrame {
     private DefaultTableModel tableModel;
 
     // Input Fields for Borrow Transactions
-    private JTextField playerIdField;
+    private JComboBox<String> playerComboBox;
+    private Map<String, Integer> playerNameToIdMap = new HashMap<>();
     private JTextField deckIdField;
     private JTextField borrowCodeField;
     private JTextArea statusArea;
@@ -68,6 +71,9 @@ public class BorrowReqGUI extends JFrame {
         // 2. Initialize Components
         initializeForm();
         initializeTable();
+
+        // 2.5 Make sure players are loaded
+        loadPlayers();
 
         // 3. Status Bar (Themed)
         statusLabel = new JLabel("Borrow Request Management Ready.");
@@ -267,39 +273,39 @@ public class BorrowReqGUI extends JFrame {
         // --- Input Fields Layout ---
         int y = 0;
 
-        // Player ID
-        gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0; 
-        JLabel playerLabel = new JLabel("Player ID:"); 
-        playerLabel.setForeground(FG_LIGHT); 
+        // Player ComboBox
+        gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0;
+        JLabel playerLabel = new JLabel("Player:");
+        playerLabel.setForeground(FG_LIGHT);
         inputGrid.add(playerLabel, gbc);
-        
-        gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0; 
-        inputGrid.add(playerIdField, gbc);
+
+        gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0;
+        inputGrid.add(playerComboBox, gbc);
 
         // Deck ID
-        gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0; 
-        JLabel deckLabel = new JLabel("Deck ID:"); 
-        deckLabel.setForeground(FG_LIGHT); 
+        gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0;
+        JLabel deckLabel = new JLabel("Deck ID:");
+        deckLabel.setForeground(FG_LIGHT);
         inputGrid.add(deckLabel, gbc);
-        
-        gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0; 
+
+        gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0;
         inputGrid.add(deckIdField, gbc);
 
         // Borrow Code (for returns)
-        gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0; 
-        JLabel codeLabel = new JLabel("Borrow Code:"); 
-        codeLabel.setForeground(FG_LIGHT); 
+        gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0;
+        JLabel codeLabel = new JLabel("Borrow Code:");
+        codeLabel.setForeground(FG_LIGHT);
         inputGrid.add(codeLabel, gbc);
-        
-        gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0; 
+
+        gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0;
         inputGrid.add(borrowCodeField, gbc);
 
         // Status Area
         gbc.gridx = 0; gbc.gridy = y; gbc.gridwidth = 2; gbc.weightx = 1.0;
-        JLabel statusAreaLabel = new JLabel("Transaction Status:"); 
-        statusAreaLabel.setForeground(FG_LIGHT); 
+        JLabel statusAreaLabel = new JLabel("Transaction Status:");
+        statusAreaLabel.setForeground(FG_LIGHT);
         inputGrid.add(statusAreaLabel, gbc);
-        
+
         gbc.gridx = 0; gbc.gridy = y + 1; gbc.weighty = 0.3;
         JScrollPane statusScrollPane = new JScrollPane(statusArea);
         statusScrollPane.setPreferredSize(new Dimension(300, 80));
@@ -354,6 +360,39 @@ public class BorrowReqGUI extends JFrame {
     }
 
     /**
+     * Loads player names and IDs into the combo box
+     */
+    private void loadPlayers() {
+        playerNameToIdMap.clear();
+        playerComboBox.removeAllItems();
+
+        try {
+            List<entity.Player> players = controller.getAllPlayers();
+
+            if (players == null || players.isEmpty()) {
+                playerComboBox.addItem("No players found");
+                return;
+            }
+
+            for (entity.Player player : players) {
+                // Get player ID and combine first and last name
+                int playerId = player.getPlayerId();
+                String fullName = player.getFirstName() + " " + player.getLastName();
+                String displayName = String.format("%s (ID: %d)", fullName, playerId);
+
+                playerComboBox.addItem(displayName);
+                playerNameToIdMap.put(displayName, playerId);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error loading players: " + e.getMessage());
+            playerComboBox.addItem("Error loading players");
+            JOptionPane.showMessageDialog(this, "Failed to load player list: " + e.getMessage(),
+                    "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
      * Helper method to style buttons uniformly.
      */
     private void styleButton(JButton button, Color bgColor) {
@@ -368,7 +407,25 @@ public class BorrowReqGUI extends JFrame {
      * Initializes all input fields for borrow transactions.
      */
     private void initializeForm() {
-        playerIdField = createThemedField(10);
+        playerComboBox = new JComboBox<>();
+        playerComboBox.setBackground(INPUT_BG);
+        playerComboBox.setForeground(FG_LIGHT);
+        playerComboBox.setFont(BOLD_FONT);
+        playerComboBox.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(80, 80, 80), 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        playerComboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                          int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                setBackground(isSelected ? ACCENT_RED.darker() : INPUT_BG);
+                setForeground(FG_LIGHT);
+                return this;
+            }
+        });
+
         deckIdField = createThemedField(10);
         borrowCodeField = createThemedField(10);
         statusArea = new JTextArea(4, 25);
@@ -386,7 +443,10 @@ public class BorrowReqGUI extends JFrame {
         requestBorrowButton.addActionListener(this::handleBorrowRequest);
         returnDeckButton.addActionListener(this::handleReturnDeck);
         checkAvailabilityButton.addActionListener(this::handleCheckAvailability);
-        refreshButton.addActionListener(e -> refreshTable());
+        refreshButton.addActionListener(e -> {
+            loadPlayers(); // Reload players when refreshing
+            refreshTable();
+        });
         clearButton.addActionListener(e -> clearForm());
     }
 
@@ -403,14 +463,26 @@ public class BorrowReqGUI extends JFrame {
                 String status = (String) tableModel.getValueAt(selectedRow, 6);
 
                 borrowCodeField.setText(String.valueOf(borrowCode));
-                playerIdField.setText(String.valueOf(playerId));
                 deckIdField.setText(String.valueOf(deckId));
 
+                // Find and select the player in combo box
+                String playerToSelect = null;
+                for (Map.Entry<String, Integer> entry : playerNameToIdMap.entrySet()) {
+                    if (entry.getValue() == playerId) {
+                        playerToSelect = entry.getKey();
+                        break;
+                    }
+                }
+
+                if (playerToSelect != null) {
+                    playerComboBox.setSelectedItem(playerToSelect);
+                }
+
                 statusArea.setText("Selected Borrow Code: " + borrowCode + "\n" +
-                                 "Player ID: " + playerId + "\n" +
-                                 "Deck ID: " + deckId + "\n" +
-                                 "Borrow Type: " + borrowType + "\n" +
-                                 "Status: " + status);
+                        "Player ID: " + playerId + "\n" +
+                        "Deck ID: " + deckId + "\n" +
+                        "Borrow Type: " + borrowType + "\n" +
+                        "Status: " + status);
 
                 statusLabel.setText("Editing Borrow Code: " + borrowCode);
             } catch (Exception ex) {
@@ -423,7 +495,7 @@ public class BorrowReqGUI extends JFrame {
      * Clears the input fields and resets the form.
      */
     private void clearForm() {
-        playerIdField.setText("");
+        playerComboBox.setSelectedIndex(0);
         deckIdField.setText("");
         borrowCodeField.setText("");
         statusArea.setText("");
@@ -439,23 +511,23 @@ public class BorrowReqGUI extends JFrame {
 
         try {
             List<BorrowRequest> requests = controller.getAllBorrowRequests();
-            
+
             for (BorrowRequest request : requests) {
                 Object[] rowData = {
-                    request.getBorrowCode(),
-                    request.getPlayerId(),
-                    request.getDeckId(),
-                    request.getBorrowType(),
-                    request.getRequestDate(),
-                    request.getReturnDate(),
-                    request.getStatus()
+                        request.getBorrowCode(),
+                        request.getPlayerId(),
+                        request.getDeckId(),
+                        request.getBorrowType(),
+                        request.getRequestDate(),
+                        request.getReturnDate(),
+                        request.getStatus()
                 };
                 tableModel.addRow(rowData);
             }
 
             statusArea.setText("Loaded " + requests.size() + " borrow requests from database.");
             statusLabel.setText("Table refreshed successfully. Total requests: " + requests.size());
-            
+
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Failed to load borrow requests: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
             statusLabel.setText("ERROR: Failed to load data.");
@@ -470,7 +542,17 @@ public class BorrowReqGUI extends JFrame {
 
     private void handleBorrowRequest(ActionEvent e) {
         try {
-            int playerId = Integer.parseInt(playerIdField.getText().trim());
+            // Get selected player from combo box
+            String selectedPlayer = (String) playerComboBox.getSelectedItem();
+
+            if (selectedPlayer == null || selectedPlayer.contains("No players") ||
+                    selectedPlayer.contains("Error")) {
+                JOptionPane.showMessageDialog(this, "Please select a valid player",
+                        "Input Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int playerId = playerNameToIdMap.get(selectedPlayer);
             int deckId = Integer.parseInt(deckIdField.getText().trim());
 
             if (playerId <= 0 || deckId <= 0) {
@@ -482,20 +564,20 @@ public class BorrowReqGUI extends JFrame {
 
             if (success) {
                 statusArea.setText("Borrow request submitted successfully!\n" +
-                                 "Player ID: " + playerId + "\n" +
-                                 "Deck ID: " + deckId + "\n" +
-                                 "Status: Pending\n\n" +
-                                 "Note: Borrow type is automatically determined based on deck availability.");
+                        "Player: " + selectedPlayer + "\n" +
+                        "Deck ID: " + deckId + "\n" +
+                        "Status: Pending\n\n" +
+                        "Note: Borrow type is automatically determined based on deck availability.");
                 statusLabel.setText("Borrow request created successfully.");
                 clearForm();
                 refreshTable();
             } else {
                 statusArea.setText("Borrow request failed!\n" +
-                                 "Deck may be unavailable or database error occurred.");
+                        "Deck may be unavailable or database error occurred.");
                 statusLabel.setText("Borrow request failed - deck may be unavailable.");
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Player ID and Deck ID must be valid numbers.", "Input Error", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Deck ID must be a valid number.", "Input Error", JOptionPane.WARNING_MESSAGE);
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Database error processing borrow request: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
@@ -516,14 +598,14 @@ public class BorrowReqGUI extends JFrame {
 
             if (success) {
                 statusArea.setText("Deck returned successfully!\n" +
-                                 "Borrow Code: " + borrowCode + "\n" +
-                                 "Return Date: " + java.time.LocalDate.now());
+                        "Borrow Code: " + borrowCode + "\n" +
+                        "Return Date: " + java.time.LocalDate.now());
                 statusLabel.setText("Deck returned successfully.");
                 clearForm();
                 refreshTable();
             } else {
                 statusArea.setText("Deck return failed!\n" +
-                                 "Borrow Code may not exist or database error occurred.");
+                        "Borrow Code may not exist or database error occurred.");
                 statusLabel.setText("Deck return failed.");
             }
         } catch (NumberFormatException ex) {
@@ -548,17 +630,17 @@ public class BorrowReqGUI extends JFrame {
 
             if (available) {
                 statusArea.setText("Deck Availability Check:\n" +
-                                 "Deck ID: " + deckId + "\n" +
-                                 "Status: AVAILABLE ✓\n" +
-                                 "This deck can be borrowed immediately.\n" +
-                                 "Borrow type will be: 'Available Borrow'");
+                        "Deck ID: " + deckId + "\n" +
+                        "Status: AVAILABLE ✓\n" +
+                        "This deck can be borrowed immediately.\n" +
+                        "Borrow type will be: 'Available Borrow'");
                 statusLabel.setText("Deck " + deckId + " is available.");
             } else {
                 statusArea.setText("Deck Availability Check:\n" +
-                                 "Deck ID: " + deckId + "\n" +
-                                 "Status: UNAVAILABLE ✗\n" +
-                                 "This deck is currently borrowed.\n" +
-                                 "Borrow type will be: 'Pending Borrow' (waiting list)");
+                        "Deck ID: " + deckId + "\n" +
+                        "Status: UNAVAILABLE ✗\n" +
+                        "This deck is currently borrowed.\n" +
+                        "Borrow type will be: 'Pending Borrow' (waiting list)");
                 statusLabel.setText("Deck " + deckId + " is unavailable.");
             }
         } catch (NumberFormatException ex) {

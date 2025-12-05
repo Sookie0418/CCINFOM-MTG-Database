@@ -1,6 +1,7 @@
 package gui;
 import controller.*;
 import entity.Deck;
+import entity.Player;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -13,6 +14,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.HashMap;
 import javax.swing.JDialog;
 import javax.swing.JCheckBox;
 import java.net.URL;
@@ -41,7 +43,8 @@ public class DeckGUI extends JFrame {
     // Input Fields for Deck Management
     private JTextField deckIdField;
     private JTextField deckNameField;
-    private JTextField playerIdField;
+    private JComboBox<String> playerComboBox;
+    private Map<String, Integer> playerNameToIdMap = new HashMap<>();
     private JTextField bracketInfoField;
     private JTextArea descriptionArea;
     private JTextArea statusArea;
@@ -77,6 +80,9 @@ public class DeckGUI extends JFrame {
         // 2. Initialize Components
         initializeForm();
         initializeTable();
+
+        // 2.5 Load Player
+        loadPlayers();
 
         // 3. Status Bar (Themed)
         statusLabel = new JLabel("Deck Management Ready.");
@@ -295,14 +301,14 @@ public class DeckGUI extends JFrame {
         gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0;
         inputGrid.add(deckNameField, gbc);
 
-        // Player ID
+        // Player
         gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0;
-        JLabel playerIdLabel = new JLabel("Player ID:");
-        playerIdLabel.setForeground(FG_LIGHT);
-        inputGrid.add(playerIdLabel, gbc);
+        JLabel playerLabel = new JLabel("Player:");
+        playerLabel.setForeground(FG_LIGHT);
+        inputGrid.add(playerLabel, gbc);
 
         gbc.gridx = 1; gbc.gridy = y++; gbc.weightx = 1.0;
-        inputGrid.add(playerIdField, gbc);
+        inputGrid.add(playerComboBox, gbc);
 
         // Bracket Info
         gbc.gridx = 0; gbc.gridy = y; gbc.weightx = 0;
@@ -406,9 +412,27 @@ public class DeckGUI extends JFrame {
      * Initializes all input fields for deck management.
      */
     private void initializeForm() {
+        playerComboBox = new JComboBox<>();
+        playerComboBox.setBackground(INPUT_BG);
+        playerComboBox.setForeground(FG_LIGHT);
+        playerComboBox.setFont(BOLD_FONT);
+        playerComboBox.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(80, 80, 80), 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+        playerComboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                                                          int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                setBackground(isSelected ? ACCENT_BLUE.darker() : INPUT_BG);
+                setForeground(FG_LIGHT);
+                return this;
+            }
+        });
+
         deckIdField = createThemedField(10);
         deckNameField = createThemedField(15);
-        playerIdField = createThemedField(10);
         bracketInfoField = createThemedField(15);
         descriptionArea = new JTextArea(3, 25);
         descriptionArea.setLineWrap(true);
@@ -431,23 +455,11 @@ public class DeckGUI extends JFrame {
         validateDeckButton.addActionListener(this::handleValidateDeck);
         addCardButton.addActionListener(this::handleAddCardToDeck);
         viewCardsButton.addActionListener(this::handleViewDeckCards);
-        refreshButton.addActionListener(e -> refreshTable());
+        refreshButton.addActionListener(e -> {loadPlayers(); refreshTable();});
         clearButton.addActionListener(e -> clearForm());
         deleteDeckButton.addActionListener(this::handleDeleteDeck);
     }
 
-    /**
-     * Loads the selected deck record into the form.
-     */
-    /**
-     * Loads the selected deck record into the form.
-     */
-    /**
-     * Loads the selected deck record into the form.
-     */
-    /**
-     * Loads the selected deck record into the form.
-     */
     /**
      * Loads the selected deck record into the form.
      */
@@ -478,7 +490,20 @@ public class DeckGUI extends JFrame {
                 // Populate fields
                 deckIdField.setText(deckId != -1 ? String.valueOf(deckId) : "");
                 deckNameField.setText(deckName);
-                playerIdField.setText(playerId != -1 ? String.valueOf(playerId) : "");
+
+                // Find and select the player in combo box
+                String playerToSelect = null;
+                for (Map.Entry<String, Integer> entry : playerNameToIdMap.entrySet()) {
+                    if (entry.getValue() == playerId) {
+                        playerToSelect = entry.getKey();
+                        break;
+                    }
+                }
+
+                if (playerToSelect != null) {
+                    playerComboBox.setSelectedItem(playerToSelect);
+                }
+
                 bracketInfoField.setText(bracketInfo);
                 descriptionArea.setText(description);
 
@@ -511,7 +536,7 @@ public class DeckGUI extends JFrame {
     private void clearForm() {
         deckIdField.setText("");
         deckNameField.setText("");
-        playerIdField.setText("");
+        playerComboBox.setSelectedIndex(0);
         bracketInfoField.setText("");
         descriptionArea.setText("");
         statusArea.setText("");
@@ -562,7 +587,18 @@ public class DeckGUI extends JFrame {
     private void handleCreateDeck(ActionEvent e) {
         try {
             String deckName = deckNameField.getText().trim();
-            int playerId = Integer.parseInt(playerIdField.getText().trim());
+
+            // Get selected player from combo box
+            String selectedPlayer = (String) playerComboBox.getSelectedItem();
+
+            if (selectedPlayer == null || selectedPlayer.contains("No players") ||
+                    selectedPlayer.contains("Error")) {
+                JOptionPane.showMessageDialog(this, "Please select a valid player",
+                        "Input Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int playerId = playerNameToIdMap.get(selectedPlayer);
             String bracketInfo = bracketInfoField.getText().trim();
             String description = descriptionArea.getText().trim();
 
@@ -1348,6 +1384,58 @@ public class DeckGUI extends JFrame {
             JOptionPane.showMessageDialog(this, "Database error deleting deck: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error deleting deck: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Loads player names and IDs into the combo box
+     */
+    private void loadPlayers() {
+        playerNameToIdMap.clear();
+        playerComboBox.removeAllItems();
+
+        System.out.println("DEBUG DeckGUI.loadPlayers(): Starting");
+
+        try {
+            List<Player> players = controller.getAllPlayers();
+
+            System.out.println("DEBUG DeckGUI.loadPlayers(): Retrieved " +
+                    (players != null ? players.size() : "null") + " players");
+
+            if (players == null || players.isEmpty()) {
+                System.out.println("DEBUG: Players list is empty or null");
+                playerComboBox.addItem("No players found");
+                return;
+            }
+
+            System.out.println("DEBUG: Processing " + players.size() + " players");
+            for (Player player : players) {
+                int playerId = player.getPlayerId();
+                String firstName = player.getFirstName();
+                String lastName = player.getLastName();
+
+                System.out.println("DEBUG: Player - ID: " + playerId +
+                        ", First: " + firstName +
+                        ", Last: " + lastName);
+
+                String fullName = firstName + " " + lastName;
+                String displayName = String.format("%s (ID: %d)", fullName, playerId);
+
+                playerComboBox.addItem(displayName);
+                playerNameToIdMap.put(displayName, playerId);
+            }
+
+            System.out.println("DEBUG: Added " + players.size() + " players to combo box");
+
+        } catch (SQLException e) {
+            System.err.println("Error loading players in DeckGUI: " + e.getMessage());
+            playerComboBox.addItem("Error loading players");
+            JOptionPane.showMessageDialog(this, "Failed to load player list: " + e.getMessage(),
+                    "Database Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            System.err.println("Unexpected error in loadPlayers: " + e.getMessage());
+            e.printStackTrace();
+            playerComboBox.addItem("Error: " + e.getMessage());
         }
     }
 }
